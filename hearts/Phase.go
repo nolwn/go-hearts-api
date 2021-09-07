@@ -39,8 +39,15 @@ func (h *Hearts) NextPhase() (int error) {
 	}
 
 	if h.phase == PhasePlay {
-		h.phase = PhasePass
+		h.round++ // each passing phase signifies the start of a new round
+
+		// every fourth round skips the passing phase
+		if !(h.round%4 == 0) {
+			h.phase = PhasePass
+		}
+
 	} else {
+		// put all receiving cards into players hands before the passing phase
 		for i := range h.Players {
 			h.Players[i].Hand = append(h.Players[i].Hand, h.Players[i].Recieving...)
 			h.Players[i].Recieving = []Card{}

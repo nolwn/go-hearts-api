@@ -222,8 +222,77 @@ func TestPlayPhasePlay(t *testing.T) {
 	// expect no error
 	tryToPlayCards(t, &hearts, 2, false, 22)
 
-	// expect the player who took the trick (player three) to be active
+	// expect the player who took the trick (player one) to be active
 	checkActivePlayers(t, &hearts, []int{0})
+}
+
+func TestCardPassDirection(t *testing.T) {
+	// round 1 should pass left
+	hearts := setupCannedHands()
+	hearts.round = 1
+
+	cards := passCards(&hearts) // pass cards
+
+	has := checkPassedCards(hearts, cards, getLeftIndex) // make sure cards went left
+
+	if !has {
+		t.Error("expected cards to be passed left on round 1, but they were not")
+	}
+
+	// round 2 should pass right
+	hearts = setupCannedHands()
+	hearts.round = 2
+
+	cards = passCards(&hearts)
+
+	has = checkPassedCards(hearts, cards, getRightIndex)
+
+	if !has {
+		t.Error("expected cards to be passed right on round 2, but they were not")
+	}
+
+	// round 3 should pass across
+	hearts = setupCannedHands()
+	hearts.round = 3
+
+	cards = passCards(&hearts)
+
+	has = checkPassedCards(hearts, cards, getAcrossIndex)
+
+	if !has {
+		t.Error("expected cards to be passed across on round 3, but they were not")
+	}
+
+	// round 4 should not have a passing phase
+	hearts = setupCannedHands()
+
+	// we start on round three so we can advance to round 4 and make sure it starts on
+	// the play phase. If we didn't do it this way, we could force an incorrect game
+	// state.
+	hearts.round = 3
+	hearts.phase = PhasePlay
+	hearts.phaseEnd = true
+	hearts.NextPhase()
+
+	if hearts.phase != PhasePlay {
+		t.Error("expected round 4 to skip the passing phase, but it did not")
+	}
+}
+
+func hasCards(hand []Card, cards ...Card) bool {
+	handMap := map[Card]bool{}
+
+	for _, c := range hand {
+		handMap[c] = true
+	}
+
+	for _, c := range cards {
+		if !handMap[c] {
+			return false
+		}
+	}
+
+	return true
 }
 
 func setupGame(t *testing.T) *Hearts {
@@ -290,6 +359,69 @@ func checkCardsReceived(t *testing.T, hand []Card, cards []Card) {
 			t.Errorf("card %d  get correctly passed", c)
 		}
 	}
+}
+
+func checkPassedCards(hearts Hearts, cards [][]Card, getIdx func(int) int) bool {
+	for i, c := range cards {
+		passedTo := getIdx(i)
+		if !hasCards(hearts.Players[passedTo].Hand, c...) {
+			return false
+		}
+	}
+
+	return true
+}
+
+func getAcrossIndex(i int) int {
+	return getLeftIndex(getLeftIndex(i)) // pass 2 to the left
+}
+
+func getLeftIndex(i int) int {
+	if i == 0 {
+		return 3
+	} else {
+		return i - 1
+	}
+}
+
+func getRightIndex(i int) int {
+	if i == 3 {
+		return 0
+	} else {
+		return i + 1
+	}
+}
+
+func passCards(hearts *Hearts) [][]Card {
+	cards := [][]Card{
+		{0, 4, 12},
+		{1, 5, 9},
+		{2, 6, 10},
+		{3, 7, 11},
+	}
+
+	hearts.Play(0, cards[0]...)
+	hearts.Play(1, cards[1]...)
+	hearts.Play(2, cards[2]...)
+	hearts.Play(3, cards[3]...)
+
+	return cards
+}
+
+func setupCannedHands() Hearts {
+	hearts := New()
+
+	playerCards1 := []Card{0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48}
+	playerCards2 := []Card{1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49}
+	playerCards3 := []Card{2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50}
+	playerCards4 := []Card{3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51}
+
+	hearts.Players[0].Hand = playerCards1
+	hearts.Players[1].Hand = playerCards2
+	hearts.Players[2].Hand = playerCards3
+	hearts.Players[3].Hand = playerCards4
+
+	return hearts
 }
 
 func tryToPlayCards(

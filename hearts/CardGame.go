@@ -163,7 +163,7 @@ func (h *Hearts) passPhase(player int, cards ...Card) error {
 
 	switch pass {
 	case 0:
-		return errors.New("plater cannot pass on the hold round")
+		return errors.New("player cannot pass on the hold round")
 	case 1:
 		target = h.passLeft(player, cards)
 	case 2:
