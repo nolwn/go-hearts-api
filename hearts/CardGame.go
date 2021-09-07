@@ -364,11 +364,12 @@ func hasTwoOfClus(hand []Card) bool {
 	return false
 }
 
+//
 func nextPlayer(lastPlayer int) int {
-	player := lastPlayer + 1
+	player := lastPlayer - 1
 
-	if player > 3 {
-		player = 0
+	if player < 0 {
+		player = 3
 	}
 
 	return player

@@ -193,20 +193,20 @@ func TestPlayPhasePlay(t *testing.T) {
 	// expect no error
 	tryToPlayCards(t, &hearts, 1, false, 13)
 
-	// expect the next player (player three) to be active
-	checkActivePlayers(t, &hearts, []int{2})
+	// expect the next player (player one) to be active
+	checkActivePlayers(t, &hearts, []int{0})
 
 	// player 2 tries to play another card
 	// expect an error
 	tryToPlayCards(t, &hearts, 1, true, 1)
 
-	// player 3 tries to play an offsuit card
+	// player 1 tries to play an offsuit card
 	// expect an error
-	tryToPlayCards(t, &hearts, 2, true, 50)
+	tryToPlayCards(t, &hearts, 0, true, 50)
 
-	// player 3 plays a clubs
+	// player 1 plays a clubs
 	// expect no error
-	tryToPlayCards(t, &hearts, 2, false, 22)
+	tryToPlayCards(t, &hearts, 0, false, 24)
 
 	// expect the next player (player four) to be active
 	checkActivePlayers(t, &hearts, []int{3})
@@ -215,15 +215,15 @@ func TestPlayPhasePlay(t *testing.T) {
 	// expect no error
 	tryToPlayCards(t, &hearts, 3, false, 19)
 
-	// expect the next player (player one) to be active
-	checkActivePlayers(t, &hearts, []int{0})
+	// expect the next player (player three) to be active
+	checkActivePlayers(t, &hearts, []int{2})
 
-	// player 1 plays a club
+	// player 3 plays a club
 	// expect no error
-	tryToPlayCards(t, &hearts, 0, false, 20)
+	tryToPlayCards(t, &hearts, 2, false, 22)
 
 	// expect the player who took the trick (player three) to be active
-	checkActivePlayers(t, &hearts, []int{2})
+	checkActivePlayers(t, &hearts, []int{0})
 }
 
 func setupGame(t *testing.T) *Hearts {
