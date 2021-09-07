@@ -49,7 +49,7 @@ func (h *Hearts) NextPhase() (int error) {
 	} else {
 		// put all receiving cards into players hands before the passing phase
 		for i := range h.Players {
-			h.Players[i].Hand = append(h.Players[i].Hand, h.Players[i].Recieving...)
+			h.Players[i].Hand = mergeCards(h.Players[i].Hand, h.Players[i].Recieving)
 			h.Players[i].Recieving = []Card{}
 		}
 
@@ -65,4 +65,34 @@ func (h *Hearts) NextPhase() (int error) {
 // is 0, the play phase is 1.
 func (h *Hearts) Phase() int {
 	return h.phase
+}
+
+// mergeCards takes a hand and some cards and returns a sorted slice which contains both.
+// mergeCards assumes that the hand is already sorted, but that the cards are not.
+func mergeCards(hand []Card, cards []Card) []Card {
+	// the new hand will be the size of the old hand, plus the cards it's receiving
+	capacity := len(hand) + len(cards)
+	newHand := make([]Card, 0, capacity)
+
+	// hand should already be sorted, but the cards might not be
+	sort(cards, 0, len(cards)-1)
+
+	h := 0 // hand index
+	c := 0 // cards index
+
+	for i := 0; i < capacity; i++ {
+		if h >= len(hand) { // all hand cards are already added...
+			newHand = append(newHand, cards[c])
+		} else if c >= len(cards) { // ...all cards are already added..
+			newHand = append(newHand, hand[h])
+		} else if hand[h] < cards[c] { // ... the next hand card is smaller...
+			newHand = append(newHand, hand[h])
+			h++
+		} else { // ...otherwise, the next card is smaller.
+			newHand = append(newHand, cards[c])
+			c++
+		}
+	}
+
+	return newHand
 }

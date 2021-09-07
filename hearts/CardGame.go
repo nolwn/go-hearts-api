@@ -68,6 +68,10 @@ func (h *Hearts) Setup() error {
 	h.lastTrick = -1
 	h.finished = false
 
+	for _, p := range h.Players {
+		sort(p.Hand, 0, len(p.Hand)-1)
+	}
+
 	return nil
 }
 
@@ -297,6 +301,37 @@ func (h *Hearts) playPlayers() (players []int) {
 	}
 
 	return
+}
+
+// sort sorts a hand using quicksort.
+// low is the smallest index to be sorted (probably 0)
+// high is the largest index to be sorted (probably len(hand) - 1)
+func sort(hand []Card, low int, high int) {
+	partition := low
+	mid := low
+
+	if low >= high {
+		return
+	}
+
+	for i := low + 1; i <= high; i++ {
+		if hand[i] < hand[partition] {
+			mid++
+			swap(hand, mid, i)
+		}
+	}
+
+	swap(hand, mid, partition)
+
+	sort(hand, mid+1, high)
+	sort(hand, low, mid-1)
+}
+
+// swap takes a hand and two indeces and swaps the values at those indeces
+func swap(hand []Card, first int, second int) {
+	tmp := hand[first]
+	hand[first] = hand[second]
+	hand[second] = tmp
 }
 
 // nextRound cleans up, adds up the points taken for the round, figures out who takes

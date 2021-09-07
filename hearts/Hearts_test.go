@@ -53,6 +53,13 @@ func TestHeartsSetup(t *testing.T) {
 func TestHeartsPassTurns(t *testing.T) {
 	game := setupGame(t)
 
+	// hands should be sorted at the begining of the game
+	sorted := checkHandsAreSorted(game)
+
+	if !sorted {
+		t.Error("expected hands to be sorted after passing, but they were not")
+	}
+
 	firstPlayer := game.Players[0]
 	secondPlayer := game.Players[1]
 	thirdPlayer := game.Players[2]
@@ -134,6 +141,13 @@ func TestHeartsPassTurns(t *testing.T) {
 
 	// check that the passed cards have left the players hand
 	checkCardsHaveMoved(t, game.Players[3].Hand, fourthPlayerPassed)
+
+	// hands should remain sorted at the end of the passing phase
+	sorted = checkHandsAreSorted(game)
+
+	if !sorted {
+		t.Error("expected hands to be sorted after passing, but they were not")
+	}
 
 	// once passing is finished the game should be in the play phase (1)
 	if game.Phase() != 1 {
@@ -291,6 +305,20 @@ func TestCardPassDirection(t *testing.T) {
 	}
 }
 
+func TestPointValues() {
+	// Remember that you created getHighestCard to help you with this test.
+	//
+	// 1. create a game state where players don't have full hands, an the 2 of clubs is
+	// 	  already gone. Make sure a player can sluff a heart
+	// 2. do a round where a player sluffs a heart
+	// 3. check the point total of the player who takes the trick and make sure it equals
+	//    one.
+	// 4. repeat with some other number of hearts to make sure they add up in the score
+	// 5. repeat but have a player sluff the queen instead
+	// 6. repeat one more time but have the queen and one or more hearts sluffed to make
+	//    sure they add together correctly
+}
+
 func hasCards(hand []Card, cards ...Card) bool {
 	handMap := map[Card]bool{}
 
@@ -373,6 +401,24 @@ func checkCardsReceived(t *testing.T, hand []Card, cards []Card) {
 	}
 }
 
+// checkHandsAreSorted takes a game state and checks if all the players' hands are sorted
+// in ascending order. It returns true if they are, otherwise it returns false.
+func checkHandsAreSorted(hearts *Hearts) bool {
+	for _, p := range hearts.Players {
+		hand := p.Hand
+
+		// we need to skip the last index, since we will be comparing each index with
+		// the next index
+		for i := 0; i < len(hand)-1; i++ {
+			if hand[i] > hand[i+1] {
+				return false
+			}
+		}
+	}
+
+	return true
+}
+
 func checkPassedCards(hearts Hearts, cards [][]Card, getIdx func(int) int) bool {
 	for i, c := range cards {
 		passedTo := getIdx(i)
@@ -420,6 +466,18 @@ func passCards(hearts *Hearts) [][]Card {
 	return cards
 }
 
+// getHighestCard returns the highest card of a given suit in the given hand. If no cards
+// in the given suit are found, returns -1.
+func getHighestCard(hand []Card, suit string) Card {
+	for i := len(hand) - 1; i <= 0; i-- {
+		if hand[i].Suit() == suit {
+			return hand[i]
+		}
+	}
+
+	return -1
+}
+
 func setupCannedHands() Hearts {
 	hearts := New()
 
@@ -457,6 +515,8 @@ func tryToPlayCards(
 	}
 }
 
+// findTwoOfClubs returns the index of the player who has the 2 of clubs. If no player
+// is holding it, it returns -1.
 func findTwoOfClubs(game *Hearts) int {
 	twoOfClubs := 13
 
