@@ -1,5 +1,12 @@
 package hearts
 
+const (
+	SuitDiamonds = "Diamonds"
+	SuitClubs    = "Clubs"
+	SuitHearts   = "Hearts"
+	SuitSpades   = "Spades"
+)
+
 type Card int
 
 // Compare this card against a given card. If the given card is bigger, it will return
@@ -16,13 +23,13 @@ func (c Card) Compare(other Card) int {
 // Suit returns the cards suit
 func (c Card) Suit() string {
 	if c < 13 {
-		return "Diamonds"
+		return SuitDiamonds
 	} else if c < 26 {
-		return "Clubs"
+		return SuitClubs
 	} else if c < 39 {
-		return "Hearts"
+		return SuitHearts
 	} else {
-		return "Spades"
+		return SuitSpades
 	}
 }
 

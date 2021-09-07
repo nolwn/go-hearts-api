@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+// The Two of Clubs is represented by the integer 13
+const CardTwoOfClubs Card = 13
+const CardQueenOfSpades = 49
+
 // Play in Hearts means one of two things depending on the phase. In the pass
 // phase, players pick three cards to pass. In the play phase, players pick one card
 // to play into trick.
@@ -207,20 +211,63 @@ func (h *Hearts) passRight(player int, cards []Card) int {
 }
 
 // playPhase contains the logic for playing a card during the play phase.
-func (h *Hearts) playPhase(player int, cards ...Card) error {
+func (h *Hearts) playPhase(p int, cards ...Card) error {
 	if len(cards) != 1 {
 		return errors.New("player must play exactly one card")
 	}
 
-	hand := &h.Players[player].Hand
-	played := &h.Players[player].Played
+	hand := &h.Players[p].Hand
+	played := &h.Players[p].Played
+	keepPlaying := false
 
+	// check that the player has the card
 	if !hasCard(*hand, cards[0]) {
-		return fmt.Errorf("player %d does not have %d", player, cards)
+		return fmt.Errorf("player %d does not have %d", p, cards)
+	}
+
+	// if the player has the two of clubs, they MUST play it
+	if hasTwoOfClus(*hand) {
+		if cards[0] != CardTwoOfClubs {
+			return fmt.Errorf(
+				"player has the two of clubs, but is trying to play %d",
+				cards[0],
+			)
+		}
+	}
+
+	// if a suit was led, and the player MUST follow suit, UNLESS they don't have any
+	// cards in that suit
+	if h.suit != "" && h.suit != cards[0].Suit() {
+		if hasSuit(*hand, h.suit) {
+			return fmt.Errorf(
+				"must follow suit: %s, but player played %s",
+				h.suit,
+				cards[0].Suit(),
+			)
+		}
 	}
 
 	*hand = removeCard(*hand, cards[0])
 	*played = &cards[0]
+
+	h.lastPlayed = p
+
+	// look to see if any player have not yet played
+	for _, player := range h.Players {
+		if player.Played == nil {
+			keepPlaying = true // and if not set flag so we can continue
+		}
+	}
+
+	// if no suit had been led before, then this card must be the new leading suit
+	if h.suit == "" {
+		h.suit = cards[0].Suit()
+	}
+
+	// if no player was found who hasn't played, then the round is over
+	if !keepPlaying {
+		h.nextRound()
+	}
 
 	return nil
 }
@@ -230,8 +277,12 @@ func (h *Hearts) playPhase(player int, cards ...Card) error {
 func (h *Hearts) playPlayers() (players []int) {
 	twoOfClubs := 13
 
-	if h.lastTrick != -1 {
+	if h.lastPlayed != -1 {
+		players = []int{nextPlayer(h.lastPlayed)}
+
+	} else if h.lastTrick != -1 {
 		players = []int{h.lastTrick}
+
 	} else {
 
 		// if no one took the last trick, return the player with two of clubs
@@ -246,6 +297,30 @@ func (h *Hearts) playPlayers() (players []int) {
 	}
 
 	return
+}
+
+// nextRound cleans up, adds up the points taken for the round, figures out who takes
+// them and sets up for the next round.
+func (h *Hearts) nextRound() {
+	var highestCard Card = -1
+	highestPlayer := -1
+	trick := [4]Card{}
+
+	for p, player := range h.Players {
+		card := player.Played
+		trick[p] = *card
+		if card.Suit() == h.suit {
+			if *card > highestCard {
+				highestCard = *card
+				highestPlayer = p
+			}
+		}
+	}
+
+	h.lastTrick = highestPlayer
+	h.lastPlayed = -1
+	trickTotal := sumTrickPoints(trick)
+	h.Players[highestPlayer].roundScore = trickTotal
 }
 
 // check the hand for the given cards. Return true if the cards are in the hand, false if
@@ -267,6 +342,38 @@ func hasCard(hand []Card, cards ...Card) bool {
 	return true
 }
 
+// hasSuit returns true if the given suit appears in the given hand
+func hasSuit(hand []Card, suit string) bool {
+	for _, c := range hand {
+		if c.Suit() == suit {
+			return true
+		}
+	}
+
+	return false
+}
+
+// hasTwoOfClubs returns true if the two of clubs is found in the given hand
+func hasTwoOfClus(hand []Card) bool {
+	for _, c := range hand {
+		if c == CardTwoOfClubs {
+			return true
+		}
+	}
+
+	return false
+}
+
+func nextPlayer(lastPlayer int) int {
+	player := lastPlayer + 1
+
+	if player > 3 {
+		player = 0
+	}
+
+	return player
+}
+
 // removeCard returns a new array without the given cards in it.
 func removeCard(hand []Card, cards ...Card) []Card {
 	new := make([]Card, 0, len(hand))
@@ -283,4 +390,20 @@ func removeCard(hand []Card, cards ...Card) []Card {
 	}
 
 	return new
+}
+
+func sumTrickPoints(trick [4]Card) int {
+	total := 0
+
+	for _, card := range trick {
+		if card.Suit() == SuitHearts {
+			total += 1
+		}
+
+		if card == CardQueenOfSpades {
+			total += 13
+		}
+	}
+
+	return total
 }

@@ -1,26 +1,5 @@
 package hearts
 
-const (
-
-	// PhasePass begins with each player having 13 cards in their Hand, 0 cards in their
-	// Taken, and no played cards. Where players pass cards depends on what round it is:
-	//
-	// Round 1: players pass three cards to the left (their index -1).
-	// Round 2: players pass three cards to the right (their index +1).
-	// Round 3: players pass three cards across (their index + 2).
-	// Round 4: players don't pass any cards, the phase ends immediately.
-	//
-	// After round 4, the pattern starts again from round 1.
-	PhasePass = iota
-
-	// PhasePlay is the phase where players take turns playing cards and then one player
-	// picks a trick.
-	//
-	// The first player to play is the player who last took a trick or, if it is the very
-	// first round, the player who holds the two of clubs. Each player must then play
-	PhasePlay
-)
-
 // Hearts is the underlying data of the game. It should be storable in the database with
 // few, if any, modifications.
 type Hearts struct {
@@ -33,6 +12,12 @@ type Hearts struct {
 	// is considered ended when every player has played every card in their hands.
 	finished bool
 
+	//lastPlayed is the index of the last player who played a card
+	lastPlayed int
+
+	// lastTrick is the index of the last player who took a trick
+	lastTrick int
+
 	// phase is an int that represents the phase of the game. There are two phases in
 	// Hearts, the pass phase (which is 0) and the play phase (which is 1).
 	phase int
@@ -43,8 +28,9 @@ type Hearts struct {
 	// round is the round number that is currently being played. round starts with 1.
 	round int
 
-	// lastTrick is the index of the last player who took a trick
-	lastTrick int
+	// suit is the suit of the first card played into the trick. It is the suit that must
+	// be followed
+	suit string
 }
 
 // Player represents a players hand, the tricks they've taken, and the card that was
@@ -77,14 +63,17 @@ type Player struct {
 	// into the correct player's Recieving slice.
 	Recieving []Card
 
-	// hasPassed is a flag that signals that a player has chosen three cards to pass
+	// hasPassed is a flag that signals that a player has chosen three cards to pass.
 	hasPassed bool
+
+	// roundScore keeps track of a players score as the round goes on
+	roundScore int
 }
 
 // New creates a new game of Hearts. It should represent a whole game, not just a round.
 func New() Hearts {
 	players := [4]Player{}
-	round := Hearts{}
+	hearts := Hearts{}
 
 	for i := 0; i < 4; i++ {
 		players[i] = Player{
@@ -93,8 +82,10 @@ func New() Hearts {
 		}
 	}
 
-	round.Players = players
-	round.round = 1
+	hearts.Players = players
+	hearts.round = 1
+	hearts.lastPlayed = -1
+	hearts.lastTrick = -1
 
-	return round
+	return hearts
 }

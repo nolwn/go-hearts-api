@@ -71,7 +71,7 @@ func TestHeartsPassTurns(t *testing.T) {
 	// expect no error
 	player1Cards := firstPlayer.Hand
 	firstPlayerPassed := []Card{player1Cards[0], player1Cards[1], player1Cards[5]}
-	tryToPlassCards(t, game, 0, false, firstPlayerPassed...)
+	tryToPlayCards(t, game, 0, false, firstPlayerPassed...)
 
 	// check that the passed cards have left the players hand
 	checkCardsHaveMoved(t, game.Players[0].Hand, firstPlayerPassed)
@@ -83,7 +83,7 @@ func TestHeartsPassTurns(t *testing.T) {
 	// second player tries to pass 1 card they have once, and 1 card they have twice
 	// expect an error to be returned
 	player2Cards := secondPlayer.Hand
-	tryToPlassCards(t, game, 1, true, player2Cards[7], player2Cards[3], player2Cards[3])
+	tryToPlayCards(t, game, 1, true, player2Cards[7], player2Cards[3], player2Cards[3])
 
 	// check to see which players ane able to play
 	// expect all but the first player to be able to play
@@ -91,13 +91,13 @@ func TestHeartsPassTurns(t *testing.T) {
 
 	// second player tries to pass a card they don't have
 	// expect an error to be returned
-	tryToPlassCards(t, game, 1, true, player2Cards[0], player2Cards[6], player1Cards[3])
+	tryToPlayCards(t, game, 1, true, player2Cards[0], player2Cards[6], player1Cards[3])
 
 	// third player plays three cards that they have
 	// expect no error
 	player3Cards := thirdPlayer.Hand
 	thirdPlayerPassed := []Card{player3Cards[2], player3Cards[4], player3Cards[6]}
-	tryToPlassCards(t, game, 2, false, thirdPlayerPassed...)
+	tryToPlayCards(t, game, 2, false, thirdPlayerPassed...)
 
 	// check that the passed cards have left the players hand
 	checkCardsHaveMoved(t, game.Players[2].Hand, thirdPlayerPassed)
@@ -108,17 +108,17 @@ func TestHeartsPassTurns(t *testing.T) {
 
 	// second player tries to pass too few cards
 	// expect an error (why is player 2 so stupid?!)
-	tryToPlassCards(t, game, 1, true, player2Cards[2], player2Cards[3])
+	tryToPlayCards(t, game, 1, true, player2Cards[2], player2Cards[3])
 
 	// player four tries to pass too many cards
 	// expect an error
 	player4Cards := fourthPlayer.Hand
-	tryToPlassCards(t, game, 3, true, player4Cards...)
+	tryToPlayCards(t, game, 3, true, player4Cards...)
 
 	// second player finally passes 3 good cards
 	// expect no error
 	secondPlayerPassed := []Card{player2Cards[1], player2Cards[3], player2Cards[12]}
-	tryToPlassCards(t, game, 1, false, secondPlayerPassed...)
+	tryToPlayCards(t, game, 1, false, secondPlayerPassed...)
 
 	// check that the passed cards have left the players hand
 	checkCardsHaveMoved(t, game.Players[1].Hand, secondPlayerPassed)
@@ -130,7 +130,7 @@ func TestHeartsPassTurns(t *testing.T) {
 	// fourth player passes three good cards
 	// expect no error
 	fourthPlayerPassed := []Card{player4Cards[7], player4Cards[4], player4Cards[10]}
-	tryToPlassCards(t, game, 3, false, fourthPlayerPassed...)
+	tryToPlayCards(t, game, 3, false, fourthPlayerPassed...)
 
 	// check that the passed cards have left the players hand
 	checkCardsHaveMoved(t, game.Players[3].Hand, fourthPlayerPassed)
@@ -149,6 +149,81 @@ func TestHeartsPassTurns(t *testing.T) {
 	checkCardsReceived(t, game.Players[1].Hand, thirdPlayerPassed)
 	checkCardsReceived(t, game.Players[2].Hand, fourthPlayer.Taken)
 	checkCardsReceived(t, game.Players[3].Hand, firstPlayerPassed)
+}
+
+func TestPlayPhasePlay(t *testing.T) {
+	playerCards1 := []Card{0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48}
+	playerCards2 := []Card{1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49}
+	playerCards3 := []Card{2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50}
+	playerCards4 := []Card{3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51}
+
+	hearts := New()
+
+	hearts.Setup()
+	hearts.phase = 1
+	hearts.Players[0].Hand = playerCards1
+	hearts.Players[1].Hand = playerCards2
+	hearts.Players[2].Hand = playerCards3
+	hearts.Players[3].Hand = playerCards4
+
+	// expect player with two of clubs (player two) to be the only active player
+	checkActivePlayers(t, &hearts, []int{1})
+
+	// player 3 tries to play a card
+	// expect an error
+	tryToPlayCards(t, &hearts, 2, true, 6)
+
+	// player 2 tries to play too many cards
+	// expect an error
+	tryToPlayCards(t, &hearts, 1, true, 5, 9)
+
+	// player 2 tries to play too few cards
+	// expect an error
+	tryToPlayCards(t, &hearts, 1, true)
+
+	// player 2 tries to play a card they don't hold
+	// expect an error
+	tryToPlayCards(t, &hearts, 1, true, 0)
+
+	// player 2 tries to play a card that isn't the 2 of clubs
+	// expect an error
+	tryToPlayCards(t, &hearts, 1, true, 17)
+
+	// player 2 plays the two of clubs
+	// expect no error
+	tryToPlayCards(t, &hearts, 1, false, 13)
+
+	// expect the next player (player three) to be active
+	checkActivePlayers(t, &hearts, []int{2})
+
+	// player 2 tries to play another card
+	// expect an error
+	tryToPlayCards(t, &hearts, 1, true, 1)
+
+	// player 3 tries to play an offsuit card
+	// expect an error
+	tryToPlayCards(t, &hearts, 2, true, 50)
+
+	// player 3 plays a clubs
+	// expect no error
+	tryToPlayCards(t, &hearts, 2, false, 22)
+
+	// expect the next player (player four) to be active
+	checkActivePlayers(t, &hearts, []int{3})
+
+	// player 4 plays a club
+	// expect no error
+	tryToPlayCards(t, &hearts, 3, false, 19)
+
+	// expect the next player (player one) to be active
+	checkActivePlayers(t, &hearts, []int{0})
+
+	// player 1 plays a club
+	// expect no error
+	tryToPlayCards(t, &hearts, 0, false, 20)
+
+	// expect the player who took the trick (player three) to be active
+	checkActivePlayers(t, &hearts, []int{2})
 }
 
 func setupGame(t *testing.T) *Hearts {
@@ -217,7 +292,7 @@ func checkCardsReceived(t *testing.T, hand []Card, cards []Card) {
 	}
 }
 
-func tryToPlassCards(
+func tryToPlayCards(
 	t *testing.T,
 	game *Hearts,
 	player int,
