@@ -277,6 +277,18 @@ func TestCardPassDirection(t *testing.T) {
 	if hearts.phase != PhasePlay {
 		t.Error("expected round 4 to skip the passing phase, but it did not")
 	}
+
+	// round 5 should restart the pattern
+	hearts = setupCannedHands()
+	hearts.round = 5
+
+	cards = passCards(&hearts) // pass cards
+
+	has = checkPassedCards(hearts, cards, getLeftIndex) // make sure cards went left
+
+	if !has {
+		t.Error("expected cards to be passed left on round 5, but they were not")
+	}
 }
 
 func hasCards(hand []Card, cards ...Card) bool {
