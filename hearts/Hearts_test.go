@@ -5,6 +5,11 @@ import (
 	"testing"
 )
 
+const (
+	handFull = iota
+	handSmall
+)
+
 func TestHeartsPlay(t *testing.T) {
 	round := New()
 	err := round.Setup()
@@ -242,7 +247,7 @@ func TestPlayPhasePlay(t *testing.T) {
 
 func TestCardPassDirection(t *testing.T) {
 	// round 1 should pass left
-	hearts := setupCannedHands()
+	hearts := setupCannedHands(handFull)
 	hearts.round = 1
 
 	cards := passCards(&hearts) // pass cards
@@ -254,7 +259,7 @@ func TestCardPassDirection(t *testing.T) {
 	}
 
 	// round 2 should pass right
-	hearts = setupCannedHands()
+	hearts = setupCannedHands(handFull)
 	hearts.round = 2
 
 	cards = passCards(&hearts)
@@ -266,7 +271,7 @@ func TestCardPassDirection(t *testing.T) {
 	}
 
 	// round 3 should pass across
-	hearts = setupCannedHands()
+	hearts = setupCannedHands(handFull)
 	hearts.round = 3
 
 	cards = passCards(&hearts)
@@ -278,7 +283,7 @@ func TestCardPassDirection(t *testing.T) {
 	}
 
 	// round 4 should not have a passing phase
-	hearts = setupCannedHands()
+	hearts = setupCannedHands(handFull)
 
 	// we start on round three so we can advance to round 4 and make sure it starts on
 	// the play phase. If we didn't do it this way, we could force an incorrect game
@@ -293,7 +298,7 @@ func TestCardPassDirection(t *testing.T) {
 	}
 
 	// round 5 should restart the pattern
-	hearts = setupCannedHands()
+	hearts = setupCannedHands(handFull)
 	hearts.round = 5
 
 	cards = passCards(&hearts) // pass cards
@@ -305,18 +310,215 @@ func TestCardPassDirection(t *testing.T) {
 	}
 }
 
-func TestPointValues() {
-	// Remember that you created getHighestCard to help you with this test.
-	//
-	// 1. create a game state where players don't have full hands, an the 2 of clubs is
-	// 	  already gone. Make sure a player can sluff a heart
-	// 2. do a round where a player sluffs a heart
-	// 3. check the point total of the player who takes the trick and make sure it equals
-	//    one.
-	// 4. repeat with some other number of hearts to make sure they add up in the score
-	// 5. repeat but have a player sluff the queen instead
-	// 6. repeat one more time but have the queen and one or more hearts sluffed to make
-	//    sure they add together correctly
+func TestPointValuesHearts(t *testing.T) {
+	hearts := setupCannedHands(handSmall)
+	hearts.phase = PhasePlay
+	hearts.lastTrick = 2
+
+	// player 3 plays a club
+	tryToPlayCards(
+		t,
+		&hearts,
+		2,
+		false,
+		getHighestCard(hearts.Players[2].Hand, SuitClubs),
+	)
+
+	// player 2 players their highest club
+	tryToPlayCards(
+		t,
+		&hearts,
+		1,
+		false,
+		getHighestCard(hearts.Players[1].Hand, SuitDiamonds),
+	)
+
+	// player 1 sluffs a heart
+	tryToPlayCards(
+		t,
+		&hearts,
+		0,
+		false,
+		getHighestCard(hearts.Players[0].Hand, SuitHearts),
+	)
+
+	// player 4 plays a club
+	tryToPlayCards(
+		t,
+		&hearts,
+		3,
+		false,
+		getHighestCard(hearts.Players[3].Hand, SuitClubs),
+	)
+
+	// The trick has now been taken. Figure out who took it and count up their points.
+	took := hearts.lastTrick
+	takenScore := hearts.Players[took].roundScore
+
+	// the number of points taken should be 1 for the one heart that was sluffed by player 1
+	if takenScore != 1 {
+		t.Errorf(
+			"Player %d should have taken 1 point worth hearts, but instead they took %d",
+			took,
+			takenScore,
+		)
+	}
+
+	// setup a new game
+	hearts = setupCannedHands(handSmall)
+	hearts.phase = PhasePlay
+	hearts.lastTrick = 2
+
+	//player 3 plays their highest club
+	tryToPlayCards(
+		t,
+		&hearts,
+		2,
+		false,
+		getHighestCard(hearts.Players[2].Hand, SuitClubs),
+	)
+
+	// player 2 leads with their highest club
+	tryToPlayCards(
+		t,
+		&hearts,
+		1,
+		false,
+		getHighestCard(hearts.Players[1].Hand, SuitHearts),
+	)
+
+	// player 1 sluffs a heart
+	tryToPlayCards(
+		t,
+		&hearts,
+		0,
+		false,
+		getHighestCard(hearts.Players[0].Hand, SuitHearts),
+	)
+
+	// player 4 plays their highest club
+	tryToPlayCards(
+		t,
+		&hearts,
+		3,
+		false,
+		getHighestCard(hearts.Players[3].Hand, SuitClubs),
+	)
+
+	took = hearts.lastTrick
+	takenScore = hearts.Players[took].roundScore
+
+	if takenScore != 2 {
+		t.Errorf(
+			"Player %d should have taken 2 point worth hearts, but instead they took %d",
+			took,
+			takenScore,
+		)
+	}
+}
+
+func TestPointValuesJamoke(t *testing.T) {
+	hearts := setupCannedHands(handSmall)
+	hearts.phase = PhasePlay
+	hearts.lastTrick = 2
+
+	// player 3 plays a club
+	tryToPlayCards(
+		t,
+		&hearts,
+		2,
+		false,
+		getHighestCard(hearts.Players[2].Hand, SuitClubs),
+	)
+
+	// player 2 players their highest club
+	tryToPlayCards(
+		t,
+		&hearts,
+		1,
+		false,
+		CardJamoke,
+	)
+
+	// player 1 sluffs a heart
+	tryToPlayCards(
+		t,
+		&hearts,
+		0,
+		false,
+		getHighestCard(hearts.Players[0].Hand, SuitSpades),
+	)
+
+	// player 4 plays a club
+	tryToPlayCards(
+		t,
+		&hearts,
+		3,
+		false,
+		getHighestCard(hearts.Players[3].Hand, SuitClubs),
+	)
+
+	took := hearts.lastTrick
+	takenScore := hearts.Players[took].roundScore
+
+	if takenScore != 13 {
+		t.Errorf(
+			"Player %d should have taken 13 point worth hearts, but instead they took %d",
+			took,
+			takenScore,
+		)
+	}
+
+	hearts = setupCannedHands(handSmall)
+	hearts.phase = PhasePlay
+	hearts.lastTrick = 2
+
+	// player 3 plays a club
+	tryToPlayCards(
+		t,
+		&hearts,
+		2,
+		false,
+		getHighestCard(hearts.Players[2].Hand, SuitClubs),
+	)
+
+	// player 2 players their highest club
+	tryToPlayCards(
+		t,
+		&hearts,
+		1,
+		false,
+		CardJamoke,
+	)
+
+	// player 1 sluffs a heart
+	tryToPlayCards(
+		t,
+		&hearts,
+		0,
+		false,
+		getHighestCard(hearts.Players[0].Hand, SuitHearts),
+	)
+
+	// player 4 plays a club
+	tryToPlayCards(
+		t,
+		&hearts,
+		3,
+		false,
+		getHighestCard(hearts.Players[3].Hand, SuitClubs),
+	)
+
+	took = hearts.lastTrick
+	takenScore = hearts.Players[took].roundScore
+
+	if takenScore != 14 {
+		t.Errorf(
+			"Player %d should have taken 14 point worth hearts, but instead they took %d",
+			took,
+			takenScore,
+		)
+	}
 }
 
 func hasCards(hand []Card, cards ...Card) bool {
@@ -469,7 +671,7 @@ func passCards(hearts *Hearts) [][]Card {
 // getHighestCard returns the highest card of a given suit in the given hand. If no cards
 // in the given suit are found, returns -1.
 func getHighestCard(hand []Card, suit string) Card {
-	for i := len(hand) - 1; i <= 0; i-- {
+	for i := len(hand) - 1; i >= 0; i-- {
 		if hand[i].Suit() == suit {
 			return hand[i]
 		}
@@ -478,13 +680,36 @@ func getHighestCard(hand []Card, suit string) Card {
 	return -1
 }
 
-func setupCannedHands() Hearts {
-	hearts := New()
+func setupCannedHands(hand int) Hearts {
+	// As a helpful reminder:
+	// Diamonds 0–12
+	// Clubs 	13–25
+	// Hearts 	26–38
+	// Spades 	39–51
 
-	playerCards1 := []Card{0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48}
-	playerCards2 := []Card{1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49}
-	playerCards3 := []Card{2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50}
-	playerCards4 := []Card{3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51}
+	hearts := New()
+	hearts.Setup()
+
+	var playerCards1 []Card
+	var playerCards2 []Card
+	var playerCards3 []Card
+	var playerCards4 []Card
+
+	switch hand {
+	case handFull:
+		playerCards1 = []Card{0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48}
+		playerCards2 = []Card{1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49}
+		playerCards3 = []Card{2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50}
+		playerCards4 = []Card{3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51}
+
+	// player one and two are both fully out of clubs. Both have hearts they can sluff, and player
+	// two has the queen of spades.
+	case handSmall:
+		playerCards1 = []Card{4, 8, 12, 28, 32, 36, 40, 44, 48}
+		playerCards2 = []Card{1, 5, 9, 29, 33, 37, 41, 45, 49}
+		playerCards3 = []Card{2, 6, 10, 18, 22, 30, 34, 42, 50}
+		playerCards4 = []Card{3, 11, 19, 27, 35, 39, 43, 47, 51}
+	}
 
 	hearts.Players[0].Hand = playerCards1
 	hearts.Players[1].Hand = playerCards2

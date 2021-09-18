@@ -9,7 +9,7 @@ import (
 
 // The Two of Clubs is represented by the integer 13
 const CardTwoOfClubs Card = 13
-const CardQueenOfSpades = 49
+const CardJamoke = 49
 
 // Play in Hearts means one of two things depending on the phase. In the pass
 // phase, players pick three cards to pass. In the play phase, players pick one card
@@ -399,7 +399,9 @@ func hasTwoOfClus(hand []Card) bool {
 	return false
 }
 
-//
+// nextPlayer returns the index to the "left" of a given player. Left, for our purposes,
+// is toward the begining of the slice. If the index is 0, it wraps around to the last
+// index.
 func nextPlayer(lastPlayer int) int {
 	player := lastPlayer - 1
 
@@ -428,6 +430,7 @@ func removeCard(hand []Card, cards ...Card) []Card {
 	return new
 }
 
+// sumTrickPoints takes a trick and returns the sum of all the points contained in it.
 func sumTrickPoints(trick [4]Card) int {
 	total := 0
 
@@ -436,7 +439,7 @@ func sumTrickPoints(trick [4]Card) int {
 			total += 1
 		}
 
-		if card == CardQueenOfSpades {
+		if card == CardJamoke {
 			total += 13
 		}
 	}
