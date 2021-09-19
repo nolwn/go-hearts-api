@@ -33,12 +33,17 @@ const (
 // The play phase is considered ended when each player has played one card. When
 // NextPhase is called, the Played cards are moved into the Taken slice of the player
 // who played the highest on suit card.
+//
+// Although this method is exported, Hearts will handle it internally. It never makes
+// sense for this method to be called externally. If it is, it will always return an
+// error.
 func (h *Hearts) NextPhase() (int error) {
 	if !h.phaseEnd {
 		return errors.New("cannot end phase")
 	}
 
 	if h.phase == PhasePlay {
+		h.deal()
 		h.round++ // each passing phase signifies the start of a new round
 
 		// every fourth round skips the passing phase
@@ -55,8 +60,6 @@ func (h *Hearts) NextPhase() (int error) {
 
 		h.phase++
 	}
-
-	h.finished = false
 
 	return nil
 }

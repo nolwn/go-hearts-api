@@ -7,6 +7,10 @@ package game
 // Otherwise, methods should be reliable and should not throw errors.
 type CardGame interface {
 
+	// Finished returns true if the game has ended. An ended game should not be playable
+	// anymore.
+	Finished() bool
+
 	// Play plays a card. What that means differs from game to game, and phase to phase.
 	// It might mean that a card is placed face up infront of a player, or it might mean
 	// that it is passed to another player, or it might mean that it is traded in for
@@ -28,4 +32,8 @@ type CardGame interface {
 	// enough information that the programmer can understand exactly what is happening
 	// in the game, and the game can be completely recreated by the data returned.
 	State() (state interface{})
+
+	// Winner returns the index or indeces of the player or players who have one. The
+	// value returned here may not be meaningful if that game has not finished.
+	Winner() []int
 }

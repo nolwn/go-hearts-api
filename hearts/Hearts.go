@@ -1,5 +1,7 @@
 package hearts
 
+const pointLimit = 100
+
 // Hearts is the underlying data of the game. It should be storable in the database with
 // few, if any, modifications.
 type Hearts struct {
@@ -8,8 +10,7 @@ type Hearts struct {
 	// this version of Hearts.
 	Players [4]Player
 
-	// finished is a flag that signifies that that the current round has ended. A round
-	// is considered ended when every player has played every card in their hands.
+	// finished keeps track of whether the game has ened or not
 	finished bool
 
 	//lastPlayed is the index of the last player who played a card
@@ -63,10 +64,13 @@ type Player struct {
 	// into the correct player's Recieving slice.
 	Recieving []Card
 
+	// gameScore keeps track of a player's total distance to deafeat as the game goes on
+	gameScore int
+
 	// hasPassed is a flag that signals that a player has chosen three cards to pass.
 	hasPassed bool
 
-	// roundScore keeps track of a players score as the round goes on
+	// roundScore keeps track of a player's score as the round goes on
 	roundScore int
 }
 
@@ -77,8 +81,9 @@ func New() Hearts {
 
 	for i := 0; i < 4; i++ {
 		players[i] = Player{
-			Hand:  make([]Card, 0, 13),
-			Taken: make([]Card, 0, 13),
+			Hand:      make([]Card, 0, 13),
+			Taken:     make([]Card, 0, 13),
+			gameScore: pointLimit,
 		}
 	}
 

@@ -8,6 +8,7 @@ import (
 const (
 	handFull = iota
 	handSmall
+	handFinal
 )
 
 func TestHeartsPlay(t *testing.T) {
@@ -83,7 +84,7 @@ func TestHeartsPassTurns(t *testing.T) {
 	// expect no error
 	player1Cards := firstPlayer.Hand
 	firstPlayerPassed := []Card{player1Cards[0], player1Cards[1], player1Cards[5]}
-	tryToPlayCards(t, game, 0, false, firstPlayerPassed...)
+	play(t, game, 0, false, firstPlayerPassed...)
 
 	// check that the passed cards have left the players hand
 	checkCardsHaveMoved(t, game.Players[0].Hand, firstPlayerPassed)
@@ -95,7 +96,7 @@ func TestHeartsPassTurns(t *testing.T) {
 	// second player tries to pass 1 card they have once, and 1 card they have twice
 	// expect an error to be returned
 	player2Cards := secondPlayer.Hand
-	tryToPlayCards(t, game, 1, true, player2Cards[7], player2Cards[3], player2Cards[3])
+	play(t, game, 1, true, player2Cards[7], player2Cards[3], player2Cards[3])
 
 	// check to see which players ane able to play
 	// expect all but the first player to be able to play
@@ -103,13 +104,13 @@ func TestHeartsPassTurns(t *testing.T) {
 
 	// second player tries to pass a card they don't have
 	// expect an error to be returned
-	tryToPlayCards(t, game, 1, true, player2Cards[0], player2Cards[6], player1Cards[3])
+	play(t, game, 1, true, player2Cards[0], player2Cards[6], player1Cards[3])
 
 	// third player plays three cards that they have
 	// expect no error
 	player3Cards := thirdPlayer.Hand
 	thirdPlayerPassed := []Card{player3Cards[2], player3Cards[4], player3Cards[6]}
-	tryToPlayCards(t, game, 2, false, thirdPlayerPassed...)
+	play(t, game, 2, false, thirdPlayerPassed...)
 
 	// check that the passed cards have left the players hand
 	checkCardsHaveMoved(t, game.Players[2].Hand, thirdPlayerPassed)
@@ -120,17 +121,17 @@ func TestHeartsPassTurns(t *testing.T) {
 
 	// second player tries to pass too few cards
 	// expect an error (why is player 2 so stupid?!)
-	tryToPlayCards(t, game, 1, true, player2Cards[2], player2Cards[3])
+	play(t, game, 1, true, player2Cards[2], player2Cards[3])
 
 	// player four tries to pass too many cards
 	// expect an error
 	player4Cards := fourthPlayer.Hand
-	tryToPlayCards(t, game, 3, true, player4Cards...)
+	play(t, game, 3, true, player4Cards...)
 
 	// second player finally passes 3 good cards
 	// expect no error
 	secondPlayerPassed := []Card{player2Cards[1], player2Cards[3], player2Cards[12]}
-	tryToPlayCards(t, game, 1, false, secondPlayerPassed...)
+	play(t, game, 1, false, secondPlayerPassed...)
 
 	// check that the passed cards have left the players hand
 	checkCardsHaveMoved(t, game.Players[1].Hand, secondPlayerPassed)
@@ -142,7 +143,7 @@ func TestHeartsPassTurns(t *testing.T) {
 	// fourth player passes three good cards
 	// expect no error
 	fourthPlayerPassed := []Card{player4Cards[7], player4Cards[4], player4Cards[10]}
-	tryToPlayCards(t, game, 3, false, fourthPlayerPassed...)
+	play(t, game, 3, false, fourthPlayerPassed...)
 
 	// check that the passed cards have left the players hand
 	checkCardsHaveMoved(t, game.Players[3].Hand, fourthPlayerPassed)
@@ -190,56 +191,56 @@ func TestPlayPhasePlay(t *testing.T) {
 
 	// player 3 tries to play a card
 	// expect an error
-	tryToPlayCards(t, &hearts, 2, true, 6)
+	play(t, &hearts, 2, true, 6)
 
 	// player 2 tries to play too many cards
 	// expect an error
-	tryToPlayCards(t, &hearts, 1, true, 5, 9)
+	play(t, &hearts, 1, true, 5, 9)
 
 	// player 2 tries to play too few cards
 	// expect an error
-	tryToPlayCards(t, &hearts, 1, true)
+	play(t, &hearts, 1, true)
 
 	// player 2 tries to play a card they don't hold
 	// expect an error
-	tryToPlayCards(t, &hearts, 1, true, 0)
+	play(t, &hearts, 1, true, 0)
 
 	// player 2 tries to play a card that isn't the 2 of clubs
 	// expect an error
-	tryToPlayCards(t, &hearts, 1, true, 17)
+	play(t, &hearts, 1, true, 17)
 
 	// player 2 plays the two of clubs
 	// expect no error
-	tryToPlayCards(t, &hearts, 1, false, 13)
+	play(t, &hearts, 1, false, 13)
 
 	// expect the next player (player one) to be active
 	checkActivePlayers(t, &hearts, []int{0})
 
 	// player 2 tries to play another card
 	// expect an error
-	tryToPlayCards(t, &hearts, 1, true, 1)
+	play(t, &hearts, 1, true, 1)
 
 	// player 1 tries to play an offsuit card
 	// expect an error
-	tryToPlayCards(t, &hearts, 0, true, 50)
+	play(t, &hearts, 0, true, 50)
 
 	// player 1 plays a clubs
 	// expect no error
-	tryToPlayCards(t, &hearts, 0, false, 24)
+	play(t, &hearts, 0, false, 24)
 
 	// expect the next player (player four) to be active
 	checkActivePlayers(t, &hearts, []int{3})
 
 	// player 4 plays a club
 	// expect no error
-	tryToPlayCards(t, &hearts, 3, false, 19)
+	play(t, &hearts, 3, false, 19)
 
 	// expect the next player (player three) to be active
 	checkActivePlayers(t, &hearts, []int{2})
 
 	// player 3 plays a club
 	// expect no error
-	tryToPlayCards(t, &hearts, 2, false, 22)
+	play(t, &hearts, 2, false, 22)
 
 	// expect the player who took the trick (player one) to be active
 	checkActivePlayers(t, &hearts, []int{0})
@@ -316,40 +317,13 @@ func TestPointValuesHearts(t *testing.T) {
 	hearts.lastTrick = 2
 
 	// player 3 plays a club
-	tryToPlayCards(
-		t,
-		&hearts,
-		2,
-		false,
-		getHighestCard(hearts.Players[2].Hand, SuitClubs),
-	)
-
-	// player 2 players their highest club
-	tryToPlayCards(
-		t,
-		&hearts,
-		1,
-		false,
-		getHighestCard(hearts.Players[1].Hand, SuitDiamonds),
-	)
-
+	// player 2 plays their highest club
 	// player 1 sluffs a heart
-	tryToPlayCards(
-		t,
-		&hearts,
-		0,
-		false,
-		getHighestCard(hearts.Players[0].Hand, SuitHearts),
-	)
-
 	// player 4 plays a club
-	tryToPlayCards(
-		t,
-		&hearts,
-		3,
-		false,
-		getHighestCard(hearts.Players[3].Hand, SuitClubs),
-	)
+	play(t, &hearts, 2, false, card(hearts.Players[2].Hand, SuitClubs))
+	play(t, &hearts, 1, false, card(hearts.Players[1].Hand, SuitDiamonds))
+	play(t, &hearts, 0, false, card(hearts.Players[0].Hand, SuitHearts))
+	play(t, &hearts, 3, false, card(hearts.Players[3].Hand, SuitClubs))
 
 	// The trick has now been taken. Figure out who took it and count up their points.
 	took := hearts.lastTrick
@@ -358,7 +332,7 @@ func TestPointValuesHearts(t *testing.T) {
 	// the number of points taken should be 1 for the one heart that was sluffed by player 1
 	if takenScore != 1 {
 		t.Errorf(
-			"Player %d should have taken 1 point worth hearts, but instead they took %d",
+			"player %d should have taken 1 point worth hearts, but instead they took %d",
 			took,
 			takenScore,
 		)
@@ -369,48 +343,21 @@ func TestPointValuesHearts(t *testing.T) {
 	hearts.phase = PhasePlay
 	hearts.lastTrick = 2
 
-	//player 3 plays their highest club
-	tryToPlayCards(
-		t,
-		&hearts,
-		2,
-		false,
-		getHighestCard(hearts.Players[2].Hand, SuitClubs),
-	)
-
+	// player 3 plays their highest club
 	// player 2 leads with their highest club
-	tryToPlayCards(
-		t,
-		&hearts,
-		1,
-		false,
-		getHighestCard(hearts.Players[1].Hand, SuitHearts),
-	)
-
 	// player 1 sluffs a heart
-	tryToPlayCards(
-		t,
-		&hearts,
-		0,
-		false,
-		getHighestCard(hearts.Players[0].Hand, SuitHearts),
-	)
-
 	// player 4 plays their highest club
-	tryToPlayCards(
-		t,
-		&hearts,
-		3,
-		false,
-		getHighestCard(hearts.Players[3].Hand, SuitClubs),
-	)
+	play(t, &hearts, 2, false, card(hearts.Players[2].Hand, SuitClubs))
+	play(t, &hearts, 1, false, card(hearts.Players[1].Hand, SuitHearts))
+	play(t, &hearts, 0, false, card(hearts.Players[0].Hand, SuitHearts))
+	play(t, &hearts, 3, false, card(hearts.Players[3].Hand, SuitClubs))
 
 	took = hearts.lastTrick
 	takenScore = hearts.Players[took].roundScore
 
 	if takenScore != 2 {
 		t.Errorf(
-			"Player %d should have taken 2 point worth hearts, but instead they took %d",
+			"player %d should have taken 2 point worth hearts, but instead they took %d",
 			took,
 			takenScore,
 		)
@@ -423,47 +370,20 @@ func TestPointValuesJamoke(t *testing.T) {
 	hearts.lastTrick = 2
 
 	// player 3 plays a club
-	tryToPlayCards(
-		t,
-		&hearts,
-		2,
-		false,
-		getHighestCard(hearts.Players[2].Hand, SuitClubs),
-	)
-
 	// player 2 players their highest club
-	tryToPlayCards(
-		t,
-		&hearts,
-		1,
-		false,
-		CardJamoke,
-	)
-
 	// player 1 sluffs a heart
-	tryToPlayCards(
-		t,
-		&hearts,
-		0,
-		false,
-		getHighestCard(hearts.Players[0].Hand, SuitSpades),
-	)
-
 	// player 4 plays a club
-	tryToPlayCards(
-		t,
-		&hearts,
-		3,
-		false,
-		getHighestCard(hearts.Players[3].Hand, SuitClubs),
-	)
+	play(t, &hearts, 2, false, card(hearts.Players[2].Hand, SuitClubs))
+	play(t, &hearts, 1, false, CardJamoke)
+	play(t, &hearts, 0, false, card(hearts.Players[0].Hand, SuitSpades))
+	play(t, &hearts, 3, false, card(hearts.Players[3].Hand, SuitClubs))
 
 	took := hearts.lastTrick
 	takenScore := hearts.Players[took].roundScore
 
 	if takenScore != 13 {
 		t.Errorf(
-			"Player %d should have taken 13 point worth hearts, but instead they took %d",
+			"player %d should have taken 13 point worth hearts, but instead they took %d",
 			took,
 			takenScore,
 		)
@@ -474,50 +394,107 @@ func TestPointValuesJamoke(t *testing.T) {
 	hearts.lastTrick = 2
 
 	// player 3 plays a club
-	tryToPlayCards(
-		t,
-		&hearts,
-		2,
-		false,
-		getHighestCard(hearts.Players[2].Hand, SuitClubs),
-	)
-
-	// player 2 players their highest club
-	tryToPlayCards(
-		t,
-		&hearts,
-		1,
-		false,
-		CardJamoke,
-	)
-
+	// player 2 plays The Jamoke
 	// player 1 sluffs a heart
-	tryToPlayCards(
-		t,
-		&hearts,
-		0,
-		false,
-		getHighestCard(hearts.Players[0].Hand, SuitHearts),
-	)
-
 	// player 4 plays a club
-	tryToPlayCards(
-		t,
-		&hearts,
-		3,
-		false,
-		getHighestCard(hearts.Players[3].Hand, SuitClubs),
-	)
+	play(t, &hearts, 2, false, card(hearts.Players[2].Hand, SuitClubs))
+	play(t, &hearts, 1, false, CardJamoke)
+	play(t, &hearts, 0, false, card(hearts.Players[0].Hand, SuitHearts))
+	play(t, &hearts, 3, false, card(hearts.Players[3].Hand, SuitClubs))
 
 	took = hearts.lastTrick
 	takenScore = hearts.Players[took].roundScore
 
 	if takenScore != 14 {
 		t.Errorf(
-			"Player %d should have taken 14 point worth hearts, but instead they took %d",
+			"player %d should have taken 14 point worth hearts, but instead they took %d",
 			took,
 			takenScore,
 		)
+	}
+}
+
+func TestRoundEnd(t *testing.T) {
+	hearts := setupCannedHands(handFinal)
+	hearts.phase = PhasePlay
+	hearts.lastTrick = 1
+
+	startingScore := hearts.Score()
+
+	playerOneCard := card(hearts.Players[0].Hand, SuitHearts)
+	playerTwoCard := card(hearts.Players[1].Hand, SuitDiamonds)
+	playerThreeCard := card(hearts.Players[2].Hand, SuitHearts)
+	playerFourCard := card(hearts.Players[3].Hand, SuitDiamonds)
+
+	// player 2 players their last diamond
+	// player 1 sluffs a heart
+	// player 4 plays their last diamond
+	// player 3 sluffs a heart
+	play(t, &hearts, 1, false, playerTwoCard)
+	play(t, &hearts, 0, false, playerOneCard)
+	play(t, &hearts, 3, false, playerFourCard)
+	play(t, &hearts, 2, false, playerThreeCard)
+
+	var took int
+
+	if playerTwoCard > playerFourCard {
+		took = PlayerTwo
+	} else {
+		took = PlayerFour
+	}
+
+	if hearts.Phase() != PhasePass {
+		t.Error("the round should have ended, but we are still in the pass phase")
+	}
+
+	finalScore := hearts.Score()
+
+	for _, player := range hearts.Players {
+		if len(player.Hand) != 13 {
+			t.Error("expected cards to be dealt, but they were not")
+		}
+	}
+
+	for p, start := range startingScore {
+		if p == took {
+			if start-finalScore[p] != 2 {
+				t.Errorf(
+					"player %d should have lost 2 points, but they lost %d",
+					p,
+					start-finalScore[p],
+				)
+			}
+		}
+	}
+}
+
+func TestGameEnd(t *testing.T) {
+	h := setupCannedHands(handFinal)
+	h.phase = PhasePlay
+	h.lastTrick = PlayerTwo
+
+	for p := range h.Players {
+		player := &h.Players[p]
+		player.gameScore = 1
+	}
+
+	h.Players[PlayerThree].gameScore = 100
+
+	// player 2 players their last diamond
+	// player 1 sluffs a heart
+	// player 4 plays their last diamond
+	// player 3 sluffs a heart
+	play(t, &h, PlayerTwo, false, card(h.Players[PlayerTwo].Hand, SuitDiamonds))
+	play(t, &h, PlayerOne, false, card(h.Players[PlayerOne].Hand, SuitHearts))
+	play(t, &h, PlayerFour, false, card(h.Players[PlayerFour].Hand, SuitDiamonds))
+	play(t, &h, PlayerThree, false, card(h.Players[PlayerThree].Hand, SuitHearts))
+
+	if !h.Finished() {
+		t.Error("the game should be finished but it is not")
+	}
+
+	if !compareSlices(h.Winner(), []int{PlayerThree}) {
+		t.Errorf("expected %d to win, but recieved %v instead", PlayerThree, h.Winner())
 	}
 }
 
@@ -668,9 +645,9 @@ func passCards(hearts *Hearts) [][]Card {
 	return cards
 }
 
-// getHighestCard returns the highest card of a given suit in the given hand. If no cards
+// card returns the highest card of a given suit in the given hand. If no cards
 // in the given suit are found, returns -1.
-func getHighestCard(hand []Card, suit string) Card {
+func card(hand []Card, suit string) Card {
 	for i := len(hand) - 1; i >= 0; i-- {
 		if hand[i].Suit() == suit {
 			return hand[i]
@@ -709,6 +686,13 @@ func setupCannedHands(hand int) Hearts {
 		playerCards2 = []Card{1, 5, 9, 29, 33, 37, 41, 45, 49}
 		playerCards3 = []Card{2, 6, 10, 18, 22, 30, 34, 42, 50}
 		playerCards4 = []Card{3, 11, 19, 27, 35, 39, 43, 47, 51}
+
+	// player one and three have hearts. Player two and four have diamonds.
+	case handFinal:
+		playerCards1 = []Card{28}
+		playerCards2 = []Card{1}
+		playerCards3 = []Card{30}
+		playerCards4 = []Card{3}
 	}
 
 	hearts.Players[0].Hand = playerCards1
@@ -719,7 +703,7 @@ func setupCannedHands(hand int) Hearts {
 	return hearts
 }
 
-func tryToPlayCards(
+func play(
 	t *testing.T,
 	game *Hearts,
 	player int,

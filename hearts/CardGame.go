@@ -9,7 +9,22 @@ import (
 
 // The Two of Clubs is represented by the integer 13
 const CardTwoOfClubs Card = 13
-const CardJamoke = 49
+const CardJamoke Card = 49
+
+const (
+	Nobody = iota - 1
+	PlayerOne
+	PlayerTwo
+	PlayerThree
+	PlayerFour
+)
+
+// Finished returns true if the game is over and can no longer be played. A game of
+// Hearts is considered finished when a player's score has crossed a certain threshhold,
+// generally 100 points.
+func (h *Hearts) Finished() bool {
+	return h.finished
+}
 
 // Play in Hearts means one of two things depending on the phase. In the pass
 // phase, players pick three cards to pass. In the play phase, players pick one card
@@ -17,6 +32,10 @@ const CardJamoke = 49
 //
 // An error will be returned if it isn't the players turn to play.
 func (h *Hearts) Play(player int, cards ...Card) error {
+	if h.finished {
+		return errors.New("the game is finished")
+	}
+
 	playing := h.PlayersTurn()
 	canPlay := false
 
@@ -75,14 +94,41 @@ func (h *Hearts) Setup() error {
 	return nil
 }
 
+// Winner returns the winnder of the game. In Hearts, the winner is the player who has
+// the smallest score at the end of the game. Scores, in this version, are tracked
+// started from the score threshhold that determines when the game is finised, and move
+// toward zero as the game progresses. Because of this, the winner is actually the player
+// with the highest score.
+//
+// If there is a tie between players, then all players with the winning score are
+// returned. If the game is not finished, Winner returns an empty array.
+func (h *Hearts) Winner() (winners []int) {
+	if !h.finished {
+		return
+	}
+
+	best := h.Players[PlayerOne].gameScore
+
+	for p, player := range h.Players {
+		if player.gameScore > best { // new best score
+			best = player.gameScore
+			winners = []int{p}
+		} else if player.gameScore == best { // tie for the best so far
+			winners = append(winners, p)
+		}
+	}
+
+	return
+}
+
 // clearTaken clears out any tricks taken by each of the players
-func (s *Hearts) clearTaken() {
-	for _, p := range s.Players {
+func (h *Hearts) clearTaken() {
+	for _, p := range h.Players {
 		p.Taken = make([]Card, 0, 13)
 	}
 }
 
-func (s *Hearts) deal() {
+func (h *Hearts) deal() {
 	var n Card = 0 // cards in a deck, starting with 0
 	i := 0         // player index
 	deck := make([]Card, 0, 52)
@@ -106,7 +152,7 @@ func (s *Hearts) deal() {
 		deck[ri] = deck[n]
 		n--
 
-		s.Players[i].Hand = append(s.Players[i].Hand, card)
+		h.Players[i].Hand = append(h.Players[i].Hand, card)
 
 		if i >= 3 {
 			i = 0
@@ -117,7 +163,7 @@ func (s *Hearts) deal() {
 
 	// the loop ends one card early because we can't generate a random number between 0
 	// and 0. We just need to scoop up that last card.
-	s.Players[i].Hand = append(s.Players[i].Hand, deck[0])
+	h.Players[i].Hand = append(h.Players[i].Hand, deck[0])
 }
 
 // passAcross returns the target across the table
@@ -268,9 +314,13 @@ func (h *Hearts) playPhase(p int, cards ...Card) error {
 		h.suit = cards[0].Suit()
 	}
 
-	// if no player was found who hasn't played, then the round is over
+	// if no player was found who hasn't played, then the trick is over
 	if !keepPlaying {
-		h.nextRound()
+		if len(h.Players[PlayerOne].Hand) == 0 {
+			h.nextRound()
+		} else {
+			h.nextTrick()
+		}
 	}
 
 	return nil
@@ -281,10 +331,10 @@ func (h *Hearts) playPhase(p int, cards ...Card) error {
 func (h *Hearts) playPlayers() (players []int) {
 	twoOfClubs := 13
 
-	if h.lastPlayed != -1 {
+	if h.lastPlayed != Nobody {
 		players = []int{nextPlayer(h.lastPlayed)}
 
-	} else if h.lastTrick != -1 {
+	} else if h.lastTrick != Nobody {
 		players = []int{h.lastTrick}
 
 	} else {
@@ -303,57 +353,47 @@ func (h *Hearts) playPlayers() (players []int) {
 	return
 }
 
-// sort sorts a hand using quicksort.
-// low is the smallest index to be sorted (probably 0)
-// high is the largest index to be sorted (probably len(hand) - 1)
-func sort(hand []Card, low int, high int) {
-	partition := low
-	mid := low
+// nextRound advances to the next phase and increments the round number.
+func (h *Hearts) nextRound() {
+	h.nextTrick()
 
-	if low >= high {
-		return
-	}
+	for p := range h.Players {
+		player := &h.Players[p]
+		player.gameScore -= player.roundScore
+		player.roundScore = 0
 
-	for i := low + 1; i <= high; i++ {
-		if hand[i] < hand[partition] {
-			mid++
-			swap(hand, mid, i)
+		if player.gameScore <= 0 {
+			h.finished = true
 		}
 	}
 
-	swap(hand, mid, partition)
-
-	sort(hand, mid+1, high)
-	sort(hand, low, mid-1)
+	h.lastTrick = Nobody
+	h.phaseEnd = true
+	h.round++
+	h.NextPhase()
 }
 
-// swap takes a hand and two indeces and swaps the values at those indeces
-func swap(hand []Card, first int, second int) {
-	tmp := hand[first]
-	hand[first] = hand[second]
-	hand[second] = tmp
-}
-
-// nextRound cleans up, adds up the points taken for the round, figures out who takes
-// them and sets up for the next round.
-func (h *Hearts) nextRound() {
-	var highestCard Card = -1
-	highestPlayer := -1
+// nextTrick cleans up, adds up the points taken in the trick, figures out who takes them
+// and sets up for the next trick.
+func (h *Hearts) nextTrick() {
+	var highestCard Card = Nobody
+	highestPlayer := Nobody
 	trick := [4]Card{}
 
 	for p, player := range h.Players {
 		card := player.Played
 		trick[p] = *card
-		if card.Suit() == h.suit {
+
+		if card.Suit() == h.suit { // only card that are on suit can take the trick
 			if *card > highestCard {
-				highestCard = *card
-				highestPlayer = p
+				highestCard = *card // Set the highest card...
+				highestPlayer = p   // ...and the player who took it.
 			}
 		}
 	}
 
 	h.lastTrick = highestPlayer
-	h.lastPlayed = -1
+	h.lastPlayed = Nobody
 	trickTotal := sumTrickPoints(trick)
 	h.Players[highestPlayer].roundScore = trickTotal
 }
@@ -405,8 +445,8 @@ func hasTwoOfClus(hand []Card) bool {
 func nextPlayer(lastPlayer int) int {
 	player := lastPlayer - 1
 
-	if player < 0 {
-		player = 3
+	if player < PlayerOne {
+		player = PlayerFour
 	}
 
 	return player
@@ -430,6 +470,30 @@ func removeCard(hand []Card, cards ...Card) []Card {
 	return new
 }
 
+// sort sorts a hand using quicksort.
+// low is the smallest index to be sorted (probably 0)
+// high is the largest index to be sorted (probably len(hand) - 1)
+func sort(hand []Card, low int, high int) {
+	partition := low
+	mid := low
+
+	if low >= high {
+		return
+	}
+
+	for i := low + 1; i <= high; i++ {
+		if hand[i] < hand[partition] {
+			mid++
+			swap(hand, mid, i)
+		}
+	}
+
+	swap(hand, mid, partition)
+
+	sort(hand, mid+1, high)
+	sort(hand, low, mid-1)
+}
+
 // sumTrickPoints takes a trick and returns the sum of all the points contained in it.
 func sumTrickPoints(trick [4]Card) int {
 	total := 0
@@ -445,4 +509,11 @@ func sumTrickPoints(trick [4]Card) int {
 	}
 
 	return total
+}
+
+// swap takes a hand and two indeces and swaps the values at those indeces
+func swap(hand []Card, first int, second int) {
+	tmp := hand[first]
+	hand[first] = hand[second]
+	hand[second] = tmp
 }
