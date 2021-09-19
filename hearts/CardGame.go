@@ -294,6 +294,10 @@ func (h *Hearts) playPhase(p int, cards ...Card) error {
 				h.suit,
 				cards[0].Suit(),
 			)
+		} else if h.round == 1 && cards[0].Suit() == SuitHearts {
+			if !onlyHasHearts(*hand) {
+				return errors.New("cannot play a heart on the first trick")
+			}
 		}
 	}
 
@@ -462,6 +466,16 @@ func nextPlayer(lastPlayer int) int {
 	}
 
 	return player
+}
+
+func onlyHasHearts(hand []Card) bool {
+	for _, card := range hand {
+		if card.Suit() != SuitHearts {
+			return false
+		}
+	}
+
+	return true
 }
 
 // removeCard returns a new array without the given cards in it.

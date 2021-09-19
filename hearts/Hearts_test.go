@@ -9,6 +9,8 @@ const (
 	handFull = iota
 	handSmall
 	handFinal
+	handAllHearts
+	handAllHeartsSmall
 )
 
 func TestHeartsPlay(t *testing.T) {
@@ -312,22 +314,23 @@ func TestCardPassDirection(t *testing.T) {
 }
 
 func TestPointValuesHearts(t *testing.T) {
-	hearts := setupCannedHands(handSmall)
-	hearts.phase = PhasePlay
-	hearts.lastTrick = 2
+	h := setupCannedHands(handSmall)
+	h.phase = PhasePlay
+	h.lastTrick = 2
+	h.round = 7
 
 	// player 3 plays a club
 	// player 2 plays their highest club
 	// player 1 sluffs a heart
 	// player 4 plays a club
-	play(t, &hearts, 2, false, card(hearts.Players[2].Hand, SuitClubs))
-	play(t, &hearts, 1, false, card(hearts.Players[1].Hand, SuitDiamonds))
-	play(t, &hearts, 0, false, card(hearts.Players[0].Hand, SuitHearts))
-	play(t, &hearts, 3, false, card(hearts.Players[3].Hand, SuitClubs))
+	play(t, &h, 2, false, card(h.Players[2].Hand, SuitClubs))
+	play(t, &h, 1, false, card(h.Players[1].Hand, SuitDiamonds))
+	play(t, &h, 0, false, card(h.Players[0].Hand, SuitHearts))
+	play(t, &h, 3, false, card(h.Players[3].Hand, SuitClubs))
 
 	// The trick has now been taken. Figure out who took it and count up their points.
-	took := hearts.lastTrick
-	takenScore := hearts.Players[took].roundScore
+	took := h.lastTrick
+	takenScore := h.Players[took].roundScore
 
 	// the number of points taken should be 1 for the one heart that was sluffed by player 1
 	if takenScore != 1 {
@@ -339,21 +342,22 @@ func TestPointValuesHearts(t *testing.T) {
 	}
 
 	// setup a new game
-	hearts = setupCannedHands(handSmall)
-	hearts.phase = PhasePlay
-	hearts.lastTrick = 2
+	h = setupCannedHands(handSmall)
+	h.phase = PhasePlay
+	h.lastTrick = 2
+	h.round = 7
 
 	// player 3 plays their highest club
 	// player 2 leads with their highest club
 	// player 1 sluffs a heart
 	// player 4 plays their highest club
-	play(t, &hearts, 2, false, card(hearts.Players[2].Hand, SuitClubs))
-	play(t, &hearts, 1, false, card(hearts.Players[1].Hand, SuitHearts))
-	play(t, &hearts, 0, false, card(hearts.Players[0].Hand, SuitHearts))
-	play(t, &hearts, 3, false, card(hearts.Players[3].Hand, SuitClubs))
+	play(t, &h, 2, false, card(h.Players[2].Hand, SuitClubs))
+	play(t, &h, 1, false, card(h.Players[1].Hand, SuitHearts))
+	play(t, &h, 0, false, card(h.Players[0].Hand, SuitHearts))
+	play(t, &h, 3, false, card(h.Players[3].Hand, SuitClubs))
 
-	took = hearts.lastTrick
-	takenScore = hearts.Players[took].roundScore
+	took = h.lastTrick
+	takenScore = h.Players[took].roundScore
 
 	if takenScore != 2 {
 		t.Errorf(
@@ -365,21 +369,22 @@ func TestPointValuesHearts(t *testing.T) {
 }
 
 func TestPointValuesJamoke(t *testing.T) {
-	hearts := setupCannedHands(handSmall)
-	hearts.phase = PhasePlay
-	hearts.lastTrick = 2
+	h := setupCannedHands(handSmall)
+	h.phase = PhasePlay
+	h.lastTrick = 2
+	h.round = 7
 
 	// player 3 plays a club
 	// player 2 players their highest club
 	// player 1 sluffs a heart
 	// player 4 plays a club
-	play(t, &hearts, 2, false, card(hearts.Players[2].Hand, SuitClubs))
-	play(t, &hearts, 1, false, CardJamoke)
-	play(t, &hearts, 0, false, card(hearts.Players[0].Hand, SuitSpades))
-	play(t, &hearts, 3, false, card(hearts.Players[3].Hand, SuitClubs))
+	play(t, &h, 2, false, card(h.Players[2].Hand, SuitClubs))
+	play(t, &h, 1, false, CardJamoke)
+	play(t, &h, 0, false, card(h.Players[0].Hand, SuitSpades))
+	play(t, &h, 3, false, card(h.Players[3].Hand, SuitClubs))
 
-	took := hearts.lastTrick
-	takenScore := hearts.Players[took].roundScore
+	took := h.lastTrick
+	takenScore := h.Players[took].roundScore
 
 	if takenScore != 13 {
 		t.Errorf(
@@ -389,21 +394,22 @@ func TestPointValuesJamoke(t *testing.T) {
 		)
 	}
 
-	hearts = setupCannedHands(handSmall)
-	hearts.phase = PhasePlay
-	hearts.lastTrick = 2
+	h = setupCannedHands(handSmall)
+	h.phase = PhasePlay
+	h.lastTrick = 2
+	h.round = 7
 
 	// player 3 plays a club
 	// player 2 plays The Jamoke
 	// player 1 sluffs a heart
 	// player 4 plays a club
-	play(t, &hearts, 2, false, card(hearts.Players[2].Hand, SuitClubs))
-	play(t, &hearts, 1, false, CardJamoke)
-	play(t, &hearts, 0, false, card(hearts.Players[0].Hand, SuitHearts))
-	play(t, &hearts, 3, false, card(hearts.Players[3].Hand, SuitClubs))
+	play(t, &h, 2, false, card(h.Players[2].Hand, SuitClubs))
+	play(t, &h, 1, false, CardJamoke)
+	play(t, &h, 0, false, card(h.Players[0].Hand, SuitHearts))
+	play(t, &h, 3, false, card(h.Players[3].Hand, SuitClubs))
 
-	took = hearts.lastTrick
-	takenScore = hearts.Players[took].roundScore
+	took = h.lastTrick
+	takenScore = h.Players[took].roundScore
 
 	if takenScore != 14 {
 		t.Errorf(
@@ -414,26 +420,60 @@ func TestPointValuesJamoke(t *testing.T) {
 	}
 }
 
+func TestNoPointsOnFirstTrick(t *testing.T) {
+	h := setupCannedHands(handSmall)
+	h.phase = PhasePlay
+	h.lastTrick = PlayerFour
+	h.round = 1 // Although the two of clubs is gone, we are pretending this is round 1
+
+	// player 4 leads with clubs
+	// player 3 follows suit
+	// player 2 has not clubs and tries to play a heart which should fail.
+	play(t, &h, PlayerFour, false, card(h.Players[PlayerFour].Hand, SuitClubs))
+	play(t, &h, PlayerThree, false, card(h.Players[PlayerThree].Hand, SuitClubs))
+	play(t, &h, PlayerTwo, true, card(h.Players[PlayerTwo].Hand, SuitHearts))
+
+	// however if it weren't round 1...
+	h.round = 2
+
+	// then it should succeed
+	play(t, &h, PlayerTwo, false, card(h.Players[PlayerTwo].Hand, SuitHearts))
+
+	// An exception is made if the player ONLY has Hearts (a rare but possible situation)
+	h = setupCannedHands(handAllHearts)
+	h.phase = PhasePlay
+	h.lastTrick = PlayerThree
+	h.round = 1 // Although the two of clubs is gone, we are pretending this is round 1
+
+	// player 4 leads with clubs
+	// player 3 follows suit
+	// player 2 has not clubs and tries to play a heart which should fail.
+	play(t, &h, PlayerThree, false, CardTwoOfClubs)
+	play(t, &h, PlayerTwo, false, card(h.Players[PlayerTwo].Hand, SuitClubs))
+	play(t, &h, PlayerOne, false, card(h.Players[PlayerOne].Hand, SuitHearts))
+}
+
 func TestRoundEnd(t *testing.T) {
-	hearts := setupCannedHands(handFinal)
-	hearts.phase = PhasePlay
-	hearts.lastTrick = 1
+	h := setupCannedHands(handFinal)
+	h.phase = PhasePlay
+	h.lastTrick = 1
+	h.round = 12
 
-	startingScore := hearts.Score()
+	startingScore := h.Score()
 
-	playerOneCard := card(hearts.Players[0].Hand, SuitHearts)
-	playerTwoCard := card(hearts.Players[1].Hand, SuitDiamonds)
-	playerThreeCard := card(hearts.Players[2].Hand, SuitHearts)
-	playerFourCard := card(hearts.Players[3].Hand, SuitDiamonds)
+	playerOneCard := card(h.Players[0].Hand, SuitHearts)
+	playerTwoCard := card(h.Players[1].Hand, SuitDiamonds)
+	playerThreeCard := card(h.Players[2].Hand, SuitHearts)
+	playerFourCard := card(h.Players[3].Hand, SuitDiamonds)
 
 	// player 2 players their last diamond
 	// player 1 sluffs a heart
 	// player 4 plays their last diamond
 	// player 3 sluffs a heart
-	play(t, &hearts, 1, false, playerTwoCard)
-	play(t, &hearts, 0, false, playerOneCard)
-	play(t, &hearts, 3, false, playerFourCard)
-	play(t, &hearts, 2, false, playerThreeCard)
+	play(t, &h, 1, false, playerTwoCard)
+	play(t, &h, 0, false, playerOneCard)
+	play(t, &h, 3, false, playerFourCard)
+	play(t, &h, 2, false, playerThreeCard)
 
 	var took int
 
@@ -443,13 +483,13 @@ func TestRoundEnd(t *testing.T) {
 		took = PlayerFour
 	}
 
-	if hearts.Phase() != PhasePass {
+	if h.Phase() != PhasePass {
 		t.Error("the round should have ended, but we are still in the pass phase")
 	}
 
-	finalScore := hearts.Score()
+	finalScore := h.Score()
 
-	for _, player := range hearts.Players {
+	for _, player := range h.Players {
 		if len(player.Hand) != 13 {
 			t.Error("expected cards to be dealt, but they were not")
 		}
@@ -472,6 +512,7 @@ func TestMoonShot(t *testing.T) {
 	h := setupCannedHands(handFinal)
 	h.phase = PhasePlay
 	h.lastTrick = 1
+	h.round = 12
 
 	startingScore := h.Score()
 
@@ -530,6 +571,7 @@ func TestGameEnd(t *testing.T) {
 	h := setupCannedHands(handFinal)
 	h.phase = PhasePlay
 	h.lastTrick = PlayerTwo
+	h.round = 12
 
 	for p := range h.Players {
 		player := &h.Players[p]
@@ -731,13 +773,16 @@ func setupCannedHands(hand int) Hearts {
 	var playerCards4 []Card
 
 	switch hand {
+
+	// Everyone has full hands and the cards are perfectly evenly divided. Player two
+	// has the Two of Clubs.
 	case handFull:
 		playerCards1 = []Card{0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48}
 		playerCards2 = []Card{1, 5, 9, 13, 17, 21, 25, 29, 33, 37, 41, 45, 49}
 		playerCards3 = []Card{2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50}
 		playerCards4 = []Card{3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51}
 
-	// player one and two are both fully out of clubs. Both have hearts they can sluff, and player
+	// Player one and two are both fully out of clubs. Both have hearts they can sluff, and player
 	// two has the queen of spades.
 	case handSmall:
 		playerCards1 = []Card{4, 8, 12, 28, 32, 36, 40, 44, 48}
@@ -745,12 +790,28 @@ func setupCannedHands(hand int) Hearts {
 		playerCards3 = []Card{2, 6, 10, 18, 22, 30, 34, 42, 50}
 		playerCards4 = []Card{3, 11, 19, 27, 35, 39, 43, 47, 51}
 
-	// player one and three have hearts. Player two and four have diamonds.
+	// Player one and three have hearts. Player two and four have diamonds.
 	case handFinal:
 		playerCards1 = []Card{28}
 		playerCards2 = []Card{1}
 		playerCards3 = []Card{30}
 		playerCards4 = []Card{3}
+
+	// Everyone has full hands, but player one has all the hearts. Player three has the
+	// Two of Clubs.
+	case handAllHearts:
+		playerCards1 = []Card{26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38}
+		playerCards2 = []Card{0, 3, 6, 9, 12, 15, 18, 21, 24, 39, 42, 45, 48}
+		playerCards3 = []Card{1, 4, 7, 10, 13, 16, 19, 22, 25, 40, 43, 46, 49}
+		playerCards4 = []Card{2, 5, 8, 11, 14, 17, 20, 23, 41, 44, 47, 50, 51}
+
+	// Everyone has some cards, and the two of clubs is gone, but player one has all the
+	// hearts.
+	case handAllHeartsSmall:
+		playerCards1 = []Card{26, 27, 28, 29, 30, 31}
+		playerCards2 = []Card{0, 3, 6, 9, 12, 15}
+		playerCards3 = []Card{1, 4, 7, 10, 16, 19}
+		playerCards4 = []Card{2, 5, 8, 11, 14, 17}
 	}
 
 	hearts.Players[0].Hand = playerCards1
