@@ -468,6 +468,64 @@ func TestRoundEnd(t *testing.T) {
 	}
 }
 
+func TestMoonShot(t *testing.T) {
+	h := setupCannedHands(handFinal)
+	h.phase = PhasePlay
+	h.lastTrick = 1
+
+	startingScore := h.Score()
+
+	playerOneCard := card(h.Players[0].Hand, SuitHearts)
+	playerTwoCard := card(h.Players[1].Hand, SuitDiamonds)
+	playerThreeCard := card(h.Players[2].Hand, SuitHearts)
+	playerFourCard := card(h.Players[3].Hand, SuitDiamonds)
+
+	var takes int
+
+	if playerTwoCard > playerFourCard {
+		takes = PlayerTwo
+	} else {
+		takes = PlayerFour
+	}
+
+	h.Players[takes].roundScore = 24 // 2 hearts from a moonshot
+
+	// player 2 players their last diamond
+	// player 1 sluffs a heart
+	// player 4 plays their last diamond
+	// player 3 sluffs a heart
+	play(t, &h, 1, false, playerTwoCard)
+	play(t, &h, 0, false, playerOneCard)
+	play(t, &h, 3, false, playerFourCard)
+	play(t, &h, 2, false, playerThreeCard)
+
+	if h.Phase() != PhasePass {
+		t.Error("the round should have ended, but we are still in the pass phase")
+	}
+
+	finalScore := h.Score()
+
+	for p, start := range startingScore {
+		if p == takes {
+			if start-finalScore[p] != 0 {
+				t.Errorf(
+					"player %d should have lost 0 points, but they lost %d",
+					p,
+					start-finalScore[p],
+				)
+			}
+		} else {
+			if start-finalScore[p] != 26 {
+				t.Errorf(
+					"expected other players to take 26 points, but player %d took %d",
+					p,
+					start-finalScore[p],
+				)
+			}
+		}
+	}
+}
+
 func TestGameEnd(t *testing.T) {
 	h := setupCannedHands(handFinal)
 	h.phase = PhasePlay

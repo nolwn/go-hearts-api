@@ -130,7 +130,7 @@ func (h *Hearts) clearTaken() {
 
 func (h *Hearts) deal() {
 	var n Card = 0 // cards in a deck, starting with 0
-	i := 0         // player index
+	i := PlayerOne // player index
 	deck := make([]Card, 0, 52)
 
 	for n < 52 {
@@ -154,8 +154,8 @@ func (h *Hearts) deal() {
 
 		h.Players[i].Hand = append(h.Players[i].Hand, card)
 
-		if i >= 3 {
-			i = 0
+		if i == PlayerFour {
+			i = PlayerOne
 		} else {
 			i++
 		}
@@ -169,21 +169,21 @@ func (h *Hearts) deal() {
 // passAcross returns the target across the table
 func (h *Hearts) passAcross(player int, cards []Card) int {
 	switch player {
-	case 0:
-		return 2
-	case 1:
-		return 3
-	case 2:
-		return 0
-	default: // case 3:
-		return 1
+	case PlayerOne:
+		return PlayerThree
+	case PlayerTwo:
+		return PlayerFour
+	case PlayerThree:
+		return PlayerOne
+	default: // case PlayerFour:
+		return PlayerTwo
 	}
 }
 
 // passLeft returns the target to the players left (toward begining of array)
 func (h *Hearts) passLeft(player int, cards []Card) int {
-	if player == 0 {
-		return 3
+	if player == PlayerOne {
+		return PlayerFour
 	} else {
 		return player - 1
 	}
@@ -253,8 +253,8 @@ func (h *Hearts) passPlayers() (players []int) {
 
 // passRight returns the target to the players right (toward end of array)
 func (h *Hearts) passRight(player int, cards []Card) int {
-	if player == 3 {
-		return 0
+	if player == PlayerFour {
+		return PlayerOne
 	} else {
 		return player + 1
 	}
@@ -329,8 +329,6 @@ func (h *Hearts) playPhase(p int, cards ...Card) error {
 // playPlayers returns either the player who has the two of clubs, or the last player
 // to take a trick
 func (h *Hearts) playPlayers() (players []int) {
-	twoOfClubs := 13
-
 	if h.lastPlayed != Nobody {
 		players = []int{nextPlayer(h.lastPlayed)}
 
@@ -342,7 +340,7 @@ func (h *Hearts) playPlayers() (players []int) {
 		// if no one took the last trick, return the player with two of clubs
 		for i, p := range h.Players { // look through players...
 			for _, c := range p.Hand { // look through players' hands...
-				if c == Card(twoOfClubs) {
+				if c == Card(CardTwoOfClubs) {
 					players = []int{i}
 					return
 				}
@@ -356,12 +354,26 @@ func (h *Hearts) playPlayers() (players []int) {
 // nextRound advances to the next phase and increments the round number.
 func (h *Hearts) nextRound() {
 	h.nextTrick()
+	shot := Nobody
 
-	for p := range h.Players {
-		player := &h.Players[p]
-		player.gameScore -= player.roundScore
-		player.roundScore = 0
+	for i := 0; i < len(h.Players); i++ {
+		player := &h.Players[i]
 
+		if shot == Nobody { // everyone is taking their round score
+			if player.roundScore == 26 { // discovered that someone shot the moon
+				shot = i // mark that person as having shot
+				i = -1   // reset the loop with someone shooting; -1 so we don't skip 0
+
+			} else { // otherwise, assume no one shot and give everyone their round score
+				player.gameScore -= player.roundScore
+				player.roundScore = 0
+			}
+
+		} else if i != shot { // else another player shot the moon!
+			player.gameScore -= 26 // suck 26 points, loser!
+		}
+
+		// detect player has crossed the threshhold and ended that game
 		if player.gameScore <= 0 {
 			h.finished = true
 		}
@@ -395,7 +407,7 @@ func (h *Hearts) nextTrick() {
 	h.lastTrick = highestPlayer
 	h.lastPlayed = Nobody
 	trickTotal := sumTrickPoints(trick)
-	h.Players[highestPlayer].roundScore = trickTotal
+	h.Players[highestPlayer].roundScore += trickTotal
 }
 
 // check the hand for the given cards. Return true if the cards are in the hand, false if
