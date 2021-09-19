@@ -188,6 +188,10 @@ func TestPlayPhasePlay(t *testing.T) {
 	hearts.Players[2].Hand = playerCards3
 	hearts.Players[3].Hand = playerCards4
 
+	if hearts.trick != 1 {
+		t.Errorf("should start on trick 1 but it's trick %d", hearts.trick)
+	}
+
 	// expect player with two of clubs (player two) to be the only active player
 	checkActivePlayers(t, &hearts, []int{1})
 
@@ -246,6 +250,11 @@ func TestPlayPhasePlay(t *testing.T) {
 
 	// expect the player who took the trick (player one) to be active
 	checkActivePlayers(t, &hearts, []int{0})
+
+	// expect trick number to increment
+	if hearts.trick != 2 {
+		t.Errorf("expected trick to increment by 1 but it's trick %d", hearts.trick)
+	}
 }
 
 func TestCardPassDirection(t *testing.T) {
@@ -317,7 +326,7 @@ func TestPointValuesHearts(t *testing.T) {
 	h := setupCannedHands(handSmall)
 	h.phase = PhasePlay
 	h.lastTrick = 2
-	h.round = 7
+	h.trick = 7
 
 	// player 3 plays a club
 	// player 2 plays their highest club
@@ -345,7 +354,7 @@ func TestPointValuesHearts(t *testing.T) {
 	h = setupCannedHands(handSmall)
 	h.phase = PhasePlay
 	h.lastTrick = 2
-	h.round = 7
+	h.trick = 7
 
 	// player 3 plays their highest club
 	// player 2 leads with their highest club
@@ -372,7 +381,7 @@ func TestPointValuesJamoke(t *testing.T) {
 	h := setupCannedHands(handSmall)
 	h.phase = PhasePlay
 	h.lastTrick = 2
-	h.round = 7
+	h.trick = 7
 
 	// player 3 plays a club
 	// player 2 players their highest club
@@ -397,7 +406,7 @@ func TestPointValuesJamoke(t *testing.T) {
 	h = setupCannedHands(handSmall)
 	h.phase = PhasePlay
 	h.lastTrick = 2
-	h.round = 7
+	h.trick = 7
 
 	// player 3 plays a club
 	// player 2 plays The Jamoke
@@ -424,7 +433,7 @@ func TestNoPointsOnFirstTrick(t *testing.T) {
 	h := setupCannedHands(handSmall)
 	h.phase = PhasePlay
 	h.lastTrick = PlayerFour
-	h.round = 1 // Although the two of clubs is gone, we are pretending this is round 1
+	h.trick = 1 // Although the two of clubs is gone, we are pretending this is round 1
 
 	// player 4 leads with clubs
 	// player 3 follows suit
@@ -434,7 +443,7 @@ func TestNoPointsOnFirstTrick(t *testing.T) {
 	play(t, &h, PlayerTwo, true, card(h.Players[PlayerTwo].Hand, SuitHearts))
 
 	// however if it weren't round 1...
-	h.round = 2
+	h.trick = 2
 
 	// then it should succeed
 	play(t, &h, PlayerTwo, false, card(h.Players[PlayerTwo].Hand, SuitHearts))
@@ -443,7 +452,7 @@ func TestNoPointsOnFirstTrick(t *testing.T) {
 	h = setupCannedHands(handAllHearts)
 	h.phase = PhasePlay
 	h.lastTrick = PlayerThree
-	h.round = 1 // Although the two of clubs is gone, we are pretending this is round 1
+	h.trick = 1
 
 	// player 4 leads with clubs
 	// player 3 follows suit
@@ -457,7 +466,7 @@ func TestRoundEnd(t *testing.T) {
 	h := setupCannedHands(handFinal)
 	h.phase = PhasePlay
 	h.lastTrick = 1
-	h.round = 12
+	h.trick = 12
 
 	startingScore := h.Score()
 
@@ -512,7 +521,7 @@ func TestMoonShot(t *testing.T) {
 	h := setupCannedHands(handFinal)
 	h.phase = PhasePlay
 	h.lastTrick = 1
-	h.round = 12
+	h.trick = 12
 
 	startingScore := h.Score()
 
@@ -571,7 +580,7 @@ func TestGameEnd(t *testing.T) {
 	h := setupCannedHands(handFinal)
 	h.phase = PhasePlay
 	h.lastTrick = PlayerTwo
-	h.round = 12
+	h.trick = 12
 
 	for p := range h.Players {
 		player := &h.Players[p]

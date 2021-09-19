@@ -29,6 +29,9 @@ type Hearts struct {
 	// round is the round number that is currently being played. round starts with 1.
 	round int
 
+	// trick is the trick number that is currently being played. trick start with 1.
+	trick int
+
 	// suit is the suit of the first card played into the trick. It is the suit that must
 	// be followed
 	suit string
@@ -89,6 +92,7 @@ func New() Hearts {
 
 	hearts.Players = players
 	hearts.round = 1
+	hearts.trick = 1
 	hearts.lastPlayed = -1
 	hearts.lastTrick = -1
 

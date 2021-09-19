@@ -63,9 +63,9 @@ func (h *Hearts) Play(player int, cards ...Card) error {
 // trick or, if it's the first round, the player with the two of clubs.
 func (h *Hearts) PlayersTurn() []int {
 	if h.phase == PhasePass {
-		return h.passPlayers()
+		return h.currentlyPassing()
 	} else {
-		return h.playPlayers()
+		return h.currentlyPlaying()
 	}
 }
 
@@ -240,8 +240,8 @@ func (h *Hearts) passPhase(player int, cards ...Card) error {
 	return nil
 }
 
-// passPlayers returns the players who have not yet picked cards to pass
-func (h *Hearts) passPlayers() (players []int) {
+// currentlyPassing returns the players who have not yet picked cards to pass
+func (h *Hearts) currentlyPassing() (players []int) {
 	for i, p := range h.Players {
 		if !p.hasPassed {
 			players = append(players, i)
@@ -294,7 +294,7 @@ func (h *Hearts) playPhase(p int, cards ...Card) error {
 				h.suit,
 				cards[0].Suit(),
 			)
-		} else if h.round == 1 && cards[0].Suit() == SuitHearts {
+		} else if h.trick == 1 && cards[0].Suit() == SuitHearts {
 			if !onlyHasHearts(*hand) {
 				return errors.New("cannot play a heart on the first trick")
 			}
@@ -330,9 +330,9 @@ func (h *Hearts) playPhase(p int, cards ...Card) error {
 	return nil
 }
 
-// playPlayers returns either the player who has the two of clubs, or the last player
+// currentlyPlaying returns either the player who has the two of clubs, or the last player
 // to take a trick
-func (h *Hearts) playPlayers() (players []int) {
+func (h *Hearts) currentlyPlaying() (players []int) {
 	if h.lastPlayed != Nobody {
 		players = []int{nextPlayer(h.lastPlayed)}
 
@@ -409,6 +409,7 @@ func (h *Hearts) nextTrick() {
 	}
 
 	h.lastTrick = highestPlayer
+	h.trick += 1
 	h.lastPlayed = Nobody
 	trickTotal := sumTrickPoints(trick)
 	h.Players[highestPlayer].roundScore += trickTotal
