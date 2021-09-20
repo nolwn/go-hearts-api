@@ -28,11 +28,6 @@ type CardGame interface {
 	// the Phase method.
 	Setup() error
 
-	// State returns the current game state. It should return a data structure that has
-	// enough information that the programmer can understand exactly what is happening
-	// in the game, and the game can be completely recreated by the data returned.
-	State() (state interface{})
-
 	// Winner returns the index or indeces of the player or players who have one. The
 	// value returned here may not be meaningful if that game has not finished.
 	Winner() []int

@@ -20,8 +20,11 @@ type Hearts struct {
 	//lastPlayed is the index of the last player who played a card
 	lastPlayed int
 
-	// lastTrick is the index of the last player who took a trick
-	lastTrick int
+	// lastTaken is the index of the last player who took a trick
+	lastTaken int
+
+	// lastTrick is the last trick that was taken
+	lastTrick [4]Card
 
 	// phase is an int that represents the phase of the game. There are two phases in
 	// Hearts, the pass phase (which is 0) and the play phase (which is 1).
@@ -98,7 +101,7 @@ func New() Hearts {
 	hearts.round = 1
 	hearts.trick = 1
 	hearts.lastPlayed = -1
-	hearts.lastTrick = -1
+	hearts.lastTaken = -1
 
 	return hearts
 }

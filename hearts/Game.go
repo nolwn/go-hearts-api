@@ -84,7 +84,7 @@ func (h *Hearts) Setup() error {
 
 	h.clearTaken()
 	h.deal()
-	h.lastTrick = -1
+	h.lastTaken = -1
 	h.finished = false
 
 	for _, p := range h.Players {
@@ -340,8 +340,8 @@ func (h *Hearts) currentlyPlaying() (players []int) {
 	if h.lastPlayed != Nobody {
 		players = []int{nextPlayer(h.lastPlayed)}
 
-	} else if h.lastTrick != Nobody {
-		players = []int{h.lastTrick}
+	} else if h.lastTaken != Nobody {
+		players = []int{h.lastTaken}
 
 	} else {
 
@@ -387,7 +387,7 @@ func (h *Hearts) nextRound() {
 		}
 	}
 
-	h.lastTrick = Nobody
+	h.lastTaken = Nobody
 	h.phaseEnd = true
 	h.round++
 	h.NextPhase()
@@ -412,7 +412,8 @@ func (h *Hearts) nextTrick() {
 		}
 	}
 
-	h.lastTrick = highestPlayer
+	h.lastTaken = highestPlayer
+	h.lastTrick = trick
 	h.trick += 1
 	h.lastPlayed = Nobody
 	trickTotal := sumTrickPoints(trick)

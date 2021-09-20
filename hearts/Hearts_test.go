@@ -325,7 +325,7 @@ func TestCardPassDirection(t *testing.T) {
 func TestPointValuesHearts(t *testing.T) {
 	h := setupCannedHands(handSmall)
 	h.phase = PhasePlay
-	h.lastTrick = 2
+	h.lastTaken = 2
 	h.trick = 7
 
 	// player 3 plays a club
@@ -338,7 +338,7 @@ func TestPointValuesHearts(t *testing.T) {
 	play(t, &h, 3, false, card(h.Players[3].Hand, SuitClubs))
 
 	// The trick has now been taken. Figure out who took it and count up their points.
-	took := h.lastTrick
+	took := h.lastTaken
 	takenScore := h.Players[took].roundScore
 
 	// the number of points taken should be 1 for the one heart that was sluffed by player 1
@@ -353,7 +353,7 @@ func TestPointValuesHearts(t *testing.T) {
 	// setup a new game
 	h = setupCannedHands(handSmall)
 	h.phase = PhasePlay
-	h.lastTrick = 2
+	h.lastTaken = 2
 	h.trick = 7
 
 	// player 3 plays their highest club
@@ -365,7 +365,7 @@ func TestPointValuesHearts(t *testing.T) {
 	play(t, &h, 0, false, card(h.Players[0].Hand, SuitHearts))
 	play(t, &h, 3, false, card(h.Players[3].Hand, SuitClubs))
 
-	took = h.lastTrick
+	took = h.lastTaken
 	takenScore = h.Players[took].roundScore
 
 	if takenScore != 2 {
@@ -380,7 +380,7 @@ func TestPointValuesHearts(t *testing.T) {
 func TestPointValuesJamoke(t *testing.T) {
 	h := setupCannedHands(handSmall)
 	h.phase = PhasePlay
-	h.lastTrick = 2
+	h.lastTaken = 2
 	h.trick = 7
 
 	// player 3 plays a club
@@ -392,7 +392,7 @@ func TestPointValuesJamoke(t *testing.T) {
 	play(t, &h, 0, false, card(h.Players[0].Hand, SuitSpades))
 	play(t, &h, 3, false, card(h.Players[3].Hand, SuitClubs))
 
-	took := h.lastTrick
+	took := h.lastTaken
 	takenScore := h.Players[took].roundScore
 
 	if takenScore != 13 {
@@ -405,7 +405,7 @@ func TestPointValuesJamoke(t *testing.T) {
 
 	h = setupCannedHands(handSmall)
 	h.phase = PhasePlay
-	h.lastTrick = 2
+	h.lastTaken = 2
 	h.trick = 7
 
 	// player 3 plays a club
@@ -417,7 +417,7 @@ func TestPointValuesJamoke(t *testing.T) {
 	play(t, &h, 0, false, card(h.Players[0].Hand, SuitHearts))
 	play(t, &h, 3, false, card(h.Players[3].Hand, SuitClubs))
 
-	took = h.lastTrick
+	took = h.lastTaken
 	takenScore = h.Players[took].roundScore
 
 	if takenScore != 14 {
@@ -432,7 +432,7 @@ func TestPointValuesJamoke(t *testing.T) {
 func TestNoPointsOnFirstTrick(t *testing.T) {
 	h := setupCannedHands(handSmall)
 	h.phase = PhasePlay
-	h.lastTrick = PlayerFour
+	h.lastTaken = PlayerFour
 	h.trick = 1 // Although the two of clubs is gone, we are pretending this is round 1
 
 	// player 4 leads with clubs
@@ -451,7 +451,7 @@ func TestNoPointsOnFirstTrick(t *testing.T) {
 	// An exception is made if the player ONLY has Hearts (a rare but possible situation)
 	h = setupCannedHands(handAllHearts)
 	h.phase = PhasePlay
-	h.lastTrick = PlayerThree
+	h.lastTaken = PlayerThree
 	h.trick = 1
 
 	// player 4 leads with clubs
@@ -465,7 +465,7 @@ func TestNoPointsOnFirstTrick(t *testing.T) {
 func TestNoLeadingHeartsBeforeBroken(t *testing.T) {
 	h := setupCannedHands(handSmall)
 	h.phase = PhasePlay
-	h.lastTrick = PlayerFour
+	h.lastTaken = PlayerFour
 	h.trick = 7
 	h.brokenHearted = false
 
@@ -479,7 +479,7 @@ func TestNoLeadingHeartsBeforeBroken(t *testing.T) {
 
 	h = setupCannedHands(handAllHeartsSmall)
 	h.phase = PhasePlay
-	h.lastTrick = PlayerOne
+	h.lastTaken = PlayerOne
 	h.trick = 7
 	h.brokenHearted = false
 
@@ -490,7 +490,7 @@ func TestNoLeadingHeartsBeforeBroken(t *testing.T) {
 func TestRoundEnd(t *testing.T) {
 	h := setupCannedHands(handFinal)
 	h.phase = PhasePlay
-	h.lastTrick = 1
+	h.lastTaken = 1
 	h.trick = 12
 
 	startingScore := h.Score()
@@ -545,7 +545,7 @@ func TestRoundEnd(t *testing.T) {
 func TestMoonShot(t *testing.T) {
 	h := setupCannedHands(handFinal)
 	h.phase = PhasePlay
-	h.lastTrick = 1
+	h.lastTaken = 1
 	h.trick = 12
 
 	startingScore := h.Score()
@@ -604,7 +604,7 @@ func TestMoonShot(t *testing.T) {
 func TestGameEnd(t *testing.T) {
 	h := setupCannedHands(handFinal)
 	h.phase = PhasePlay
-	h.lastTrick = PlayerTwo
+	h.lastTaken = PlayerTwo
 	h.trick = 12
 
 	for p := range h.Players {
