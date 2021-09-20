@@ -10,6 +10,10 @@ type Hearts struct {
 	// this version of Hearts.
 	Players [4]Player
 
+	// brokenHearted is set to true if hearts have been sluffed. The Jamoke does not
+	// count as a heart.
+	brokenHearted bool
+
 	// finished keeps track of whether the game has ened or not
 	finished bool
 

@@ -299,6 +299,10 @@ func (h *Hearts) playPhase(p int, cards ...Card) error {
 				return errors.New("cannot play a heart on the first trick")
 			}
 		}
+	} else if !h.brokenHearted && cards[0].Suit() == SuitHearts { // leading with a heart
+		if !onlyHasHearts(*hand) {
+			return errors.New("cannot lead with a heart until hearts are broken")
+		}
 	}
 
 	*hand = removeCard(*hand, cards[0])

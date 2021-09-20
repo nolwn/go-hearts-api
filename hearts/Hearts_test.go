@@ -442,7 +442,7 @@ func TestNoPointsOnFirstTrick(t *testing.T) {
 	play(t, &h, PlayerThree, false, card(h.Players[PlayerThree].Hand, SuitClubs))
 	play(t, &h, PlayerTwo, true, card(h.Players[PlayerTwo].Hand, SuitHearts))
 
-	// however if it weren't round 1...
+	// however, if it weren't round 1...
 	h.trick = 2
 
 	// then it should succeed
@@ -459,6 +459,31 @@ func TestNoPointsOnFirstTrick(t *testing.T) {
 	// player 2 has not clubs and tries to play a heart which should fail.
 	play(t, &h, PlayerThree, false, CardTwoOfClubs)
 	play(t, &h, PlayerTwo, false, card(h.Players[PlayerTwo].Hand, SuitClubs))
+	play(t, &h, PlayerOne, false, card(h.Players[PlayerOne].Hand, SuitHearts))
+}
+
+func TestNoLeadingHeartsBeforeBroken(t *testing.T) {
+	h := setupCannedHands(handSmall)
+	h.phase = PhasePlay
+	h.lastTrick = PlayerFour
+	h.trick = 7
+	h.brokenHearted = false
+
+	// player 4 leads with hearts
+	play(t, &h, PlayerFour, true, card(h.Players[PlayerFour].Hand, SuitHearts))
+
+	// however, if hearts were broken...
+	h.brokenHearted = true
+
+	play(t, &h, PlayerFour, false, card(h.Players[PlayerFour].Hand, SuitHearts))
+
+	h = setupCannedHands(handAllHeartsSmall)
+	h.phase = PhasePlay
+	h.lastTrick = PlayerOne
+	h.trick = 7
+	h.brokenHearted = false
+
+	// An exception is mad if the palyer ONLY has Hearts (a not so rare situation)
 	play(t, &h, PlayerOne, false, card(h.Players[PlayerOne].Hand, SuitHearts))
 }
 
