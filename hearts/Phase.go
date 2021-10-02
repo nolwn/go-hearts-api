@@ -27,7 +27,7 @@ const (
 // called once a phase has ended. An error will be returned if the phase has not ended.
 //
 // The pass phase is considered ended when each player has picked the three cards they
-// want to pass. When NextPhase is called, thoes cards have been moved to the appropriate
+// want to pass. When NextPhase is called, those cards have been moved to the appropriate
 // players' hands.
 //
 // The play phase is considered ended when each player has played one card. When
@@ -54,8 +54,8 @@ func (h *Hearts) NextPhase() (int error) {
 	} else {
 		// put all receiving cards into players hands before the passing phase
 		for i := range h.Players {
-			h.Players[i].Hand = mergeCards(h.Players[i].Hand, h.Players[i].Recieving)
-			h.Players[i].Recieving = []Card{}
+			h.Players[i].Hand = mergeCards(h.Players[i].Hand, h.Players[i].Receiving)
+			h.Players[i].Receiving = []Card{}
 		}
 
 		h.phase++

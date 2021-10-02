@@ -94,9 +94,9 @@ func (h *Hearts) Setup() error {
 	return nil
 }
 
-// Winner returns the winnder of the game. In Hearts, the winner is the player who has
+// Winner returns the winner of the game. In Hearts, the winner is the player who has
 // the smallest score at the end of the game. Scores, in this version, are tracked
-// started from the score threshhold that determines when the game is finised, and move
+// started from the score threshhold that determines when the game is finished, and move
 // toward zero as the game progresses. Because of this, the winner is actually the player
 // with the highest score.
 //
@@ -202,7 +202,7 @@ func (h *Hearts) passPhase(player int, cards ...Card) error {
 	for i, c := range cards {
 		for j := i + 1; j < len(cards); j++ {
 			if c == cards[j] {
-				return errors.New("player must play 3 differnt cards")
+				return errors.New("player must play 3 different cards")
 			}
 		}
 	}
@@ -224,7 +224,7 @@ func (h *Hearts) passPhase(player int, cards ...Card) error {
 
 	*playerHand = removeCard(*playerHand, cards...)
 	h.Players[player].hasPassed = true
-	h.Players[target].Recieving = cards
+	h.Players[target].Receiving = cards
 
 	playing := h.PlayersTurn()
 
@@ -276,7 +276,7 @@ func (h *Hearts) playPhase(p int, cards ...Card) error {
 	}
 
 	// if the player has the two of clubs, they MUST play it
-	if hasTwoOfClus(*hand) {
+	if hasTwoOfClubs(*hand) {
 		if cards[0] != CardTwoOfClubs {
 			return fmt.Errorf(
 				"player has the two of clubs, but is trying to play %d",
@@ -451,7 +451,7 @@ func hasSuit(hand []Card, suit string) bool {
 }
 
 // hasTwoOfClubs returns true if the two of clubs is found in the given hand
-func hasTwoOfClus(hand []Card) bool {
+func hasTwoOfClubs(hand []Card) bool {
 	for _, c := range hand {
 		if c == CardTwoOfClubs {
 			return true
@@ -543,7 +543,7 @@ func sumTrickPoints(trick [4]Card) int {
 	return total
 }
 
-// swap takes a hand and two indeces and swaps the values at those indeces
+// swap takes a hand and two indices and swaps the values at those indices
 func swap(hand []Card, first int, second int) {
 	tmp := hand[first]
 	hand[first] = hand[second]

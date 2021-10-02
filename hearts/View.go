@@ -9,7 +9,7 @@ type JSONCard struct {
 
 type Perspective struct {
 
-	// Broken is set to true if hearts have been sluffed. The Jamoke does not
+	// Broken is set to true if hearts have been sloughed. The Jamoke does not
 	// count as a heart.
 	Broken bool `json:"brokenHearted"`
 
@@ -67,7 +67,7 @@ func (h *Hearts) From(player int) ([]byte, error) {
 		ThisTrick: playersToThisTrick(h.Players),
 		Turn:      getToTurn(h.Phase(), h.PlayersTurn()),
 		Took:      h.lastTaken + 1,
-		Winner:    playerIndecesToIDs(h.Winner()),
+		Winner:    playerIndicesToIDs(h.Winner()),
 	}
 
 	b, err := json.Marshal(per)
@@ -151,10 +151,10 @@ func roundToPassDirection(round int) string {
 	}
 }
 
-func playerIndecesToIDs(indeces []int) []int {
+func playerIndicesToIDs(indices []int) []int {
 	IDs := make([]int, 0, 4)
 
-	for _, index := range indeces {
+	for _, index := range indices {
 		IDs = append(IDs, index+1)
 	}
 

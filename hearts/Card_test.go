@@ -41,7 +41,7 @@ func TestCardCompare(t *testing.T) {
 	}
 
 	if twoOfDiamonds.Compare(twoOfDiamonds) != 0 {
-		t.Error("Two of Diamonds should euqal Two of Diamonds")
+		t.Error("Two of Diamonds should equal Two of Diamonds")
 	}
 
 	if twoOfClubs.Compare(threeOfClubs) >= 0 {

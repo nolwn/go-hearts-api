@@ -12,7 +12,7 @@ type CardGame interface {
 	Finished() bool
 
 	// Play plays a card. What that means differs from game to game, and phase to phase.
-	// It might mean that a card is placed face up infront of a player, or it might mean
+	// It might mean that a card is placed face up in front of a player, or it might mean
 	// that it is passed to another player, or it might mean that it is traded in for
 	// another card.
 	//
@@ -28,7 +28,7 @@ type CardGame interface {
 	// the Phase method.
 	Setup() error
 
-	// Winner returns the index or indeces of the player or players who have one. The
+	// Winner returns the index or indices of the player or players who have one. The
 	// value returned here may not be meaningful if that game has not finished.
 	Winner() []int
 }

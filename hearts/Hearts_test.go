@@ -330,7 +330,7 @@ func TestPointValuesHearts(t *testing.T) {
 
 	// player 3 plays a club
 	// player 2 plays their highest club
-	// player 1 sluffs a heart
+	// player 1 sloughs a heart
 	// player 4 plays a club
 	play(t, &h, 2, false, card(h.Players[2].Hand, SuitClubs))
 	play(t, &h, 1, false, card(h.Players[1].Hand, SuitDiamonds))
@@ -341,7 +341,7 @@ func TestPointValuesHearts(t *testing.T) {
 	took := h.lastTaken
 	takenScore := h.Players[took].roundScore
 
-	// the number of points taken should be 1 for the one heart that was sluffed by player 1
+	// the number of points taken should be 1 for the one heart that was sloughed by player 1
 	if takenScore != 1 {
 		t.Errorf(
 			"player %d should have taken 1 point worth hearts, but instead they took %d",
@@ -358,7 +358,7 @@ func TestPointValuesHearts(t *testing.T) {
 
 	// player 3 plays their highest club
 	// player 2 leads with their highest club
-	// player 1 sluffs a heart
+	// player 1 sloughs a heart
 	// player 4 plays their highest club
 	play(t, &h, 2, false, card(h.Players[2].Hand, SuitClubs))
 	play(t, &h, 1, false, card(h.Players[1].Hand, SuitHearts))
@@ -385,7 +385,7 @@ func TestPointValuesJamoke(t *testing.T) {
 
 	// player 3 plays a club
 	// player 2 players their highest club
-	// player 1 sluffs a heart
+	// player 1 sloughs a heart
 	// player 4 plays a club
 	play(t, &h, 2, false, card(h.Players[2].Hand, SuitClubs))
 	play(t, &h, 1, false, CardJamoke)
@@ -410,7 +410,7 @@ func TestPointValuesJamoke(t *testing.T) {
 
 	// player 3 plays a club
 	// player 2 plays The Jamoke
-	// player 1 sluffs a heart
+	// player 1 sloughs a heart
 	// player 4 plays a club
 	play(t, &h, 2, false, card(h.Players[2].Hand, SuitClubs))
 	play(t, &h, 1, false, CardJamoke)
@@ -501,9 +501,9 @@ func TestRoundEnd(t *testing.T) {
 	playerFourCard := card(h.Players[3].Hand, SuitDiamonds)
 
 	// player 2 players their last diamond
-	// player 1 sluffs a heart
+	// player 1 sloughs a heart
 	// player 4 plays their last diamond
-	// player 3 sluffs a heart
+	// player 3 sloughs a heart
 	play(t, &h, 1, false, playerTwoCard)
 	play(t, &h, 0, false, playerOneCard)
 	play(t, &h, 3, false, playerFourCard)
@@ -566,9 +566,9 @@ func TestMoonShot(t *testing.T) {
 	h.Players[takes].roundScore = 24 // 2 hearts from a moonshot
 
 	// player 2 players their last diamond
-	// player 1 sluffs a heart
+	// player 1 sloughs a heart
 	// player 4 plays their last diamond
-	// player 3 sluffs a heart
+	// player 3 sloughs a heart
 	play(t, &h, 1, false, playerTwoCard)
 	play(t, &h, 0, false, playerOneCard)
 	play(t, &h, 3, false, playerFourCard)
@@ -615,9 +615,9 @@ func TestGameEnd(t *testing.T) {
 	h.Players[PlayerThree].gameScore = 100
 
 	// player 2 players their last diamond
-	// player 1 sluffs a heart
+	// player 1 sloughs a heart
 	// player 4 plays their last diamond
-	// player 3 sluffs a heart
+	// player 3 sloughs a heart
 	play(t, &h, PlayerTwo, false, card(h.Players[PlayerTwo].Hand, SuitDiamonds))
 	play(t, &h, PlayerOne, false, card(h.Players[PlayerOne].Hand, SuitHearts))
 	play(t, &h, PlayerFour, false, card(h.Players[PlayerFour].Hand, SuitDiamonds))
@@ -628,7 +628,7 @@ func TestGameEnd(t *testing.T) {
 	}
 
 	if !compareSlices(h.Winner(), []int{PlayerThree}) {
-		t.Errorf("expected %d to win, but recieved %v instead", PlayerThree, h.Winner())
+		t.Errorf("expected %d to win, but received %v instead", PlayerThree, h.Winner())
 	}
 }
 
@@ -816,7 +816,7 @@ func setupCannedHands(hand int) Hearts {
 		playerCards3 = []Card{2, 6, 10, 14, 18, 22, 26, 30, 34, 38, 42, 46, 50}
 		playerCards4 = []Card{3, 7, 11, 15, 19, 23, 27, 31, 35, 39, 43, 47, 51}
 
-	// Player one and two are both fully out of clubs. Both have hearts they can sluff, and player
+	// Player one and two are both fully out of clubs. Both have hearts they can slough, and player
 	// two has the queen of spades.
 	case handSmall:
 		playerCards1 = []Card{4, 8, 12, 28, 32, 36, 40, 44, 48}

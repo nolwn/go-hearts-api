@@ -10,11 +10,11 @@ type Hearts struct {
 	// this version of Hearts.
 	Players [4]Player
 
-	// brokenHearted is set to true if hearts have been sluffed. The Jamoke does not
+	// brokenHearted is set to true if hearts have been sloughed. The Jamoke does not
 	// count as a heart.
 	brokenHearted bool
 
-	// finished keeps track of whether the game has ened or not
+	// finished keeps track of whether the game has ended or not
 	finished bool
 
 	//lastPlayed is the index of the last player who played a card
@@ -69,10 +69,10 @@ type Player struct {
 	// connected with the player that played it.
 	Played *Card
 
-	// Recieving represents the cards that are being passed to this player during the
+	// Receiving represents the cards that are being passed to this player during the
 	// passing phase. After a player has picked three cards to pass, they get moved
-	// into the correct player's Recieving slice.
-	Recieving []Card
+	// into the correct player's Receiving slice.
+	Receiving []Card
 
 	// gameScore keeps track of a player's total distance to deafeat as the game goes on
 	gameScore int
